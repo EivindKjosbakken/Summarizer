@@ -35,9 +35,9 @@ authenticator = stauth.Authenticate(
 
 # authentication code
 
-if "sidebar_visible" not in st.session_state:
-    st.session_state.sidebar_visible = True
+if "sidebar_visible" not in st.session_state: st.session_state.sidebar_visible = True
 
+if "authentication_status" not in st.session_state: st.session_state["authentication_status"] = False
 
 def toggle_sidebar():
     st.session_state.sidebar_visible = not st.session_state.sidebar_visible
