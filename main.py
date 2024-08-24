@@ -1,12 +1,11 @@
 import streamlit as st
-import fitz
-from dotenv import load_dotenv
 import os
 from openai import OpenAI
 from utility import prompt_gpt, get_openai_client, calculate_price
 import streamlit as st
 import streamlit_authenticator as stauth
 from streamlit_authenticator import Hasher
+import fitz
 
 import yaml
 from yaml.loader import SafeLoader
@@ -20,7 +19,6 @@ with open(config_file_path) as file:
     config = yaml.load(file, Loader=SafeLoader)
 
 # load keys
-load_dotenv()
 open_ai_client = get_openai_client()
 
 
@@ -107,14 +105,14 @@ if st.session_state.sidebar_visible:
             st.error(e)
 
 
-if st.session_state["authentication_status"]:
-    try:
-        if authenticator.reset_password(
-            st.session_state["username"], location="sidebar"
-        ):
-            st.success("Password modified successfully")
-    except Exception as e:
-        st.error(e)
+    if st.session_state["authentication_status"]:
+        try:
+            if authenticator.reset_password(
+                st.session_state["username"], location="sidebar"
+            ):
+                st.success("Password modified successfully")
+        except Exception as e:
+            st.error(e)
 
 
 # init states
@@ -130,7 +128,7 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 if "summary" not in st.session_state:
-    st.session_state.summary = None
+    st.session_state.summary = "This is a placeholder for the summary of the content."
 
 if "text_content" not in st.session_state:
     st.session_state.text_content = ""
@@ -166,15 +164,10 @@ with st.container():
                 # TODO remove after testing
                 full_text = full_text[:100]
 
-                st.session_state.summary = (
-                    "This is a placeholder for the summary of the content."
-                )
                 prompt = "Summarize this document: " + full_text
 
                 response_text = prompt_gpt(open_ai_client=open_ai_client, prompt=prompt)
                 st.session_state.summary = response_text
-
-                calculate_price(prompt, response_text)
 
     # Second column: Link input section
     with col2:
@@ -182,15 +175,19 @@ with st.container():
             "Link to a podcast, video, or article to summarize and chat with the content. Note that if the content is behind a paywall it cannot be accessed. Consider uploading content as PDF instead."
         )
         link = st.text_input("Paste a link", type="default")
-        if st.button("Submit Link"):
+        if st.button("Create a summary from the content in the link"):
             if not st.session_state["authentication_status"]:
                 st.write(":red[Please login to use this feature.]")
             else:
                 st.write(f"Link submitted: {link}")
-                # Assuming prompt_gpt is a function that interacts with an AI model
-                response_text = prompt_gpt(open_ai_client=open_ai_client, prompt=link)
-                st.write("Response:")
-                st.write(response_text)
+                from utility import retrieve_content
+                from utility import get_prompt
+
+                content = retrieve_content(link)
+                st.session_state.text_content = content
+                prompt = get_prompt(content)
+                response_text = prompt_gpt(open_ai_client=open_ai_client, prompt=prompt)
+                st.session_state.summary = response_text
 
 
 st.write("\n\n")
@@ -198,7 +195,6 @@ st.write("\n\n")
 # summary section
 with st.container():
     st.write("## Summary")
-    st.write("This is a placeholder for the summary of the content.")
     if st.session_state.summary is not None:
         st.write(st.session_state.summary)
 
