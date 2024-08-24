@@ -6,7 +6,7 @@ import streamlit as st
 import streamlit_authenticator as stauth
 from streamlit_authenticator import Hasher
 import fitz
-
+from utility import retrieve_content, get_prompt
 import yaml
 from yaml.loader import SafeLoader
 import logging
@@ -180,15 +180,16 @@ with st.container():
                 st.write(":red[Please login to use this feature.]")
             else:
                 st.write(f"Retrieving summary...")
-                from utility import retrieve_content
-                from utility import get_prompt
 
                 content = retrieve_content(link)
-                if len(content) > 10000: content = content[:10000] #TODO remove later #
-                st.session_state.text_content = content
-                prompt = get_prompt(content)
-                response_text = prompt_gpt(open_ai_client=open_ai_client, prompt=prompt)
-                st.session_state.summary = response_text
+                if not content:
+                    st.write("Could not retrieve content from the link.")
+                else:
+                    if len(content) > 10000: content = content[:10000] #TODO remove later 
+                    st.session_state.text_content = content
+                    prompt = get_prompt(content)
+                    response_text = prompt_gpt(open_ai_client=open_ai_client, prompt=prompt)
+                    st.session_state.summary = response_text
 
 
 st.write("\n\n")
