@@ -54,7 +54,7 @@ if st.button("Toggle authentication sidebar"):
 
 if st.session_state.sidebar_visible:
     with st.sidebar:
-        authenticator.login(location="sidebar")
+        authenticator.login(location="sidebar", clear_on_submit=True)
         if st.session_state["authentication_status"]:
             authenticator.logout()
             st.write(f'Welcome *{st.session_state["name"]}*')
@@ -70,7 +70,7 @@ if st.session_state.sidebar_visible:
                 username_of_registered_user,
                 name_of_registered_user,
             ) = authenticator.register_user(
-                location="sidebar", captcha=False, pre_authorization=False, domains=None
+                location="sidebar", captcha=False, pre_authorization=False, domains=None, clear_on_submit=True
             )
             if email_of_registered_user:
                 st.success("User registered successfully")
@@ -162,7 +162,7 @@ with st.container():
                 st.session_state.text_content = full_text
 
                 # TODO remove after testing
-                full_text = full_text[:100]
+                if len(full_text) > 10000: full_text = full_text[:10000]
 
                 prompt = "Summarize this document: " + full_text
 
@@ -179,11 +179,12 @@ with st.container():
             if not st.session_state["authentication_status"]:
                 st.write(":red[Please login to use this feature.]")
             else:
-                st.write(f"Link submitted: {link}")
+                st.write(f"Retrieving summary...")
                 from utility import retrieve_content
                 from utility import get_prompt
 
                 content = retrieve_content(link)
+                if len(content) > 10000: content = content[:10000] #TODO remove later #
                 st.session_state.text_content = content
                 prompt = get_prompt(content)
                 response_text = prompt_gpt(open_ai_client=open_ai_client, prompt=prompt)
