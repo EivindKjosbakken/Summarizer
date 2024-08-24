@@ -51,26 +51,60 @@ def update_config():
 
 if st.button("Toggle authentication sidebar"):
     toggle_sidebar()
+st.write("\n")
+# add a colored button with a link to my page
+link = "https://buymeacoffee.com/kjosbakken"
+button_text = "Buy me a coffee"
+
+# Custom HTML for a button styled like a Streamlit button with a positive green color
+button_html = f"""
+    <style>
+        .button {{
+            display: inline-block;
+            background-color: #4CAF50; /* Green color */
+            color: white;
+            padding: 0.25em 0.75em;
+            font-size: 1rem;
+            font-weight: 400;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 0.25rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }}
+        .button:hover {{
+            background-color: #45A049; /* Slightly darker green on hover */
+        }}
+    </style>
+    <a href="{link}" target="_blank">
+        <button class="button">{button_text}</button>
+    </a>
+"""
+st.markdown(button_html, unsafe_allow_html=True)
+
 
 if st.session_state.sidebar_visible:
     with st.sidebar:
-        authenticator.login(location="sidebar", clear_on_submit=True)
-        if st.session_state["authentication_status"]:
-            authenticator.logout()
-            st.write(f'Welcome *{st.session_state["name"]}*')
-            st.title("Some content")
-        elif st.session_state["authentication_status"] is False:
-            st.error("Username/password is incorrect")
-        elif st.session_state["authentication_status"] is None:
-            st.warning("Please enter your username and password")
-
+        try:
+            authenticator.login(location="sidebar", clear_on_submit=False)
+            if st.session_state["authentication_status"]:
+                authenticator.logout()
+                st.write(f'Welcome *{st.session_state["name"]}*')
+                st.title("Some content")
+            elif st.session_state["authentication_status"] is False:
+                st.error("Username/password is incorrect")
+            elif st.session_state["authentication_status"] is None:
+                st.warning("Please enter your username and password")
+        except Exception as e:
+            st.error(f"Login failed {str(e)}")
         try:
             (
                 email_of_registered_user,
                 username_of_registered_user,
                 name_of_registered_user,
             ) = authenticator.register_user(
-                location="sidebar", captcha=False, pre_authorization=False, domains=None, clear_on_submit=True
+                location="sidebar", captcha=False, pre_authorization=False, domains=None, clear_on_submit=False
             )
             if email_of_registered_user:
                 st.success("User registered successfully")
@@ -264,3 +298,4 @@ else:
         for message in messages:
             input_string += message["content"] + "\n"
         calculate_price(input_string, response)
+
