@@ -78,10 +78,10 @@ def extract_text_youtube(video_id):
 def extract_title_youtube(video_url):
     try:
         video = YouTube(video_url)
+        return video.title
     except Exception as e:
         print(f"Failed to get title with error: {e}")
         return ""
-    return video.title
 
 
 def get_youtube_content(url):
