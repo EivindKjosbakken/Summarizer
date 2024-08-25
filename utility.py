@@ -11,6 +11,17 @@ from typing import Optional
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+import socket
+
+# Get the hostname
+hostname = socket.gethostname()
+
+# Get the IP address
+ip_address = socket.gethostbyname(hostname)
+
+# Display the IP address in the Streamlit app
+logger.info(f"Hostname: {ip_address}")
+
 
 
 def get_openai_client():
