@@ -16,12 +16,6 @@ import socket
 import requests
 import streamlit as st
 
-# External service to get the public IP address
-public_ip = requests.get('https://api.ipify.org').text
-
-# Display the IP address in the Streamlit app
-st.write(f"Public IP Address: {public_ip}")
-
 def get_openai_client():
     OPEN_AI_API_KEY = st.secrets["OPEN_AI_API_KEY"]
     assert (
