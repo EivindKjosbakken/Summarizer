@@ -112,7 +112,7 @@ def get_youtube_content(url):
 
 
 def retrieve_content(link: str):
-    if "youtube" in link:
+    if "youtube" in link or "youtu.be" in link:
         return get_youtube_content(link)
     logger.info("Website not added yet") 
     return None
