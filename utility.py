@@ -1,4 +1,4 @@
-import os
+import time
 from openai import OpenAI
 import logging
 import re
@@ -11,9 +11,6 @@ from typing import Optional
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-import socket
-import requests
-import streamlit as st
 
 # set up proxy TODO make code cleaner into env variables
 PROXY_ADDRESS = st.secrets["PROXY_ADDRESS"]
@@ -76,15 +73,18 @@ def get_id_from_url_youtube(url):
 
 
 def extract_text_youtube(video_id):
-    try:
-        # caption = YouTubeTranscriptApi.get_transcript(video_id)
-        caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy})
-        text = " ".join([x["text"] for x in caption])
-        return text
-    except Exception as e:
-        print(f"Error: {e}")
-        logger.info(f"Error when extracting text from youtube video: {e}")
-        return
+    for _ in range(5): # try up to 5 times, wait 1 sec if it fails
+        try:
+            # caption = YouTubeTranscriptApi.get_transcript(video_id)
+            caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy})
+            text = " ".join([x["text"] for x in caption])
+            return text
+        except Exception as e:
+            print(f"Error: {e}")
+            logger.info(f"Error when extracting text from youtube video: {e}")
+            time.sleep(1)
+            logger.info("Retrying...")
+    return
 
 
 def extract_title_youtube(video_url):
