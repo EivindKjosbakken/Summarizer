@@ -12,9 +12,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 import socket
-
 import requests
 import streamlit as st
+
+# set up proxy TODO make code cleaner into env variables
+PROXY_ADDRESS = st.secrets["PROXY_ADDRESS"]
+PROXY_PORT = st.secrets["PROXY_PORT"]
+PROXY_USERNAME = st.secrets["PROXY_USERNAME"]
+PROXY_PASSWORD = st.secrets["PROXY_PASSWORD"]
+proxy = f"https://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_ADDRESS}:{PROXY_PORT}"
+
 
 def get_openai_client():
     OPEN_AI_API_KEY = st.secrets["OPEN_AI_API_KEY"]
@@ -67,9 +74,11 @@ def get_id_from_url_youtube(url):
         return
 
 
+
 def extract_text_youtube(video_id):
     try:
-        caption = YouTubeTranscriptApi.get_transcript(video_id)
+        # caption = YouTubeTranscriptApi.get_transcript(video_id)
+        caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy})
         text = " ".join([x["text"] for x in caption])
         return text
     except Exception as e:
