@@ -1,13 +1,10 @@
+import streamlit as st
 import time
 from openai import OpenAI
 import logging
 import re
 from youtube_transcript_api import YouTubeTranscriptApi
-import re
-from youtube_transcript_api import YouTubeTranscriptApi
 from pytube import YouTube
-import streamlit as st
-from typing import Optional
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -60,6 +57,7 @@ def calculate_price(input_string, output_string):
     return price_usd
 
 
+#TODO lage en youtube agent ellerno?
 def get_id_from_url_youtube(url):
     reg_exp = (
         r"^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*"
@@ -69,8 +67,6 @@ def get_id_from_url_youtube(url):
         return match.group(7)
     else:
         return
-
-
 
 def extract_text_youtube(video_id):
     for _ in range(5): # try up to 5 times, wait 1 sec if it fails
@@ -86,7 +82,6 @@ def extract_text_youtube(video_id):
             logger.info("Retrying...")
     return
 
-
 def extract_title_youtube(video_url):
     try:
         video = YouTube(video_url)
@@ -95,7 +90,6 @@ def extract_title_youtube(video_url):
         print(f"Failed to get title with error: {e}")
         logger.info(f"Failed to get title with error: {e}")
         return ""
-
 
 def get_youtube_content(url):
     video_id = get_id_from_url_youtube(url)
@@ -110,7 +104,6 @@ def get_youtube_content(url):
     content = f"Title: {title}, content: {text}"
     return content
 
-
 def retrieve_content(link: str):
     if "youtube" in link or "youtu.be" in link:
         return get_youtube_content(link)
@@ -121,3 +114,15 @@ def retrieve_content(link: str):
 def get_prompt(content):
     """get prompt for summary"""
     return f"Summarize this document: {content}"
+
+
+def display_credit_bar(total_credits, remaining_credits):
+    st.write(f"Remaining Credits: {remaining_credits}")
+    percentage_remaining = (remaining_credits / total_credits) * 100
+    
+    st.markdown(f"""
+    <div style="position: relative; width: 100%; background-color: black; height: 30px; border-radius: 5px;">
+        <div style="width: {percentage_remaining}%; background-color: green; height: 100%; border-radius: 5px;">
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
