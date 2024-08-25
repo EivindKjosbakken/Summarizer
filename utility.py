@@ -8,9 +8,8 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from pytube import YouTube
 import streamlit as st
 from typing import Optional
-
-
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 
@@ -72,6 +71,7 @@ def extract_text_youtube(video_id):
         return text
     except Exception as e:
         print(f"Error: {e}")
+        logger.info(f"Error when extracting text from youtube video: {e}")
         return
 
 
@@ -81,6 +81,7 @@ def extract_title_youtube(video_url):
         return video.title
     except Exception as e:
         print(f"Failed to get title with error: {e}")
+        logger.info(f"Failed to get title with error: {e}")
         return ""
 
 
@@ -92,6 +93,7 @@ def get_youtube_content(url):
 
     if not text:
         print("Error: Could not extract text from youtube video")
+        logger.info("Error: Could not extract text from youtube video")
         return
     content = f"Title: {title}, content: {text}"
     return content
@@ -100,6 +102,7 @@ def get_youtube_content(url):
 def retrieve_content(link: str):
     if "youtube" in link:
         return get_youtube_content(link)
+    logger.info("Website not added yet") 
     return None
 
 
