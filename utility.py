@@ -78,7 +78,7 @@ def get_id_from_url_youtube(url):
 def extract_text_youtube(video_id):
     try:
         # caption = YouTubeTranscriptApi.get_transcript(video_id)
-        caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"https": proxy})
+        caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy})
         text = " ".join([x["text"] for x in caption])
         return text
     except Exception as e:
