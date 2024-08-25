@@ -2,6 +2,7 @@ import streamlit as st
 import os
 from openai import OpenAI
 from utility import prompt_gpt, get_openai_client, calculate_price, display_credit_bar
+from stripe_payments import create_checkout_session, get_payment_amount, check_payment_status
 import streamlit as st
 import fitz
 from utility import retrieve_content, get_prompt
@@ -17,55 +18,66 @@ open_ai_client = get_openai_client()
 
 
 
-def toggle_sidebar():
-    st.session_state.sidebar_visible = not st.session_state.sidebar_visible
+# start of the app
 
-
-if st.button("Toggle authentication sidebar"):
-    toggle_sidebar()
-st.write("\n")
 
 display_credit_bar(total_credits=10000, remaining_credits=100) #TODO add so you have remaining credits from firebase
 st.write("\n")
 
+# init states
+if "greeting_sent" not in st.session_state:
+    st.session_state.greeting_sent = (
+        False  # This flag will track if the greeting has been sent
+    )
+# Set a default model
+if "openai_model" not in st.session_state:
+    st.session_state["openai_model"] = "gpt-4o-mini"
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# add a colored button with a link to my page
-link = "https://buymeacoffee.com/kjosbakken"
-button_text = "Buy me a coffee"
+if "summary" not in st.session_state:
+    st.session_state.summary = "This is a placeholder for the summary of the content."
 
-# Custom HTML for a button styled like a Streamlit button with a positive green color
-button_html = f"""
-    <style>
-        .button {{
-            display: inline-block;
-            background-color: #4CAF50; /* Green color */
-            color: white;
-            padding: 0.25em 0.75em;
-            font-size: 1rem;
-            font-weight: 400;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 0.25rem;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }}
-        .button:hover {{
-            background-color: #45A049; /* Slightly darker green on hover */
-        }}
-    </style>
-    <a href="{link}" target="_blank">
-        <button class="button">{button_text}</button>
-    </a>
-"""
-st.markdown(button_html, unsafe_allow_html=True)
+if "text_content" not in st.session_state:
+    st.session_state.text_content = ""
+
+is_signed_in = "user_info" in st.session_state
+
+
+st.title("Content Summarizer and Chat")
 
 
 
+
+# Stripe payment
+if st.button("Top up credits (redirects to Stripe checkout)"):
+    checkout_url = create_checkout_session()
+    if checkout_url:
+        # Automatically redirect the user to the Stripe Checkout page
+        st.markdown(f"""
+            <meta http-equiv="refresh" content="0; url={checkout_url}">
+            """, unsafe_allow_html=True)
+
+
+session_id = st.query_params.get('session_id', None)
+if session_id:
+    # Check payment status
+    if check_payment_status(session_id):
+        st.success("Payment was successful!")
+        st.balloons()
+        amount_paid, currency = get_payment_amount(session_id)
+        assert currency == "usd", "Currency is not USD"
+        # TODO top up credits with amount_paid * 100 == amount of credits in cent 
+
+    else:
+        st.error("Payment failed or was canceled.")
+    st.query_params.pop('session_id', None)  # Remove the session_id from the query parameters
+     
 
 ## Not logged in -----------------------------------------------------------------------------------
 with st.sidebar:
-    if 'user_info' not in st.session_state:
+    if not is_signed_in:
         col1,col2,col3 = st.columns([1,2,1])
 
         # Authentication form layout
@@ -110,26 +122,6 @@ with st.sidebar:
         st.button(label='Delete Account',on_click=auth_functions.delete_account,args=[password],type='primary')
 
 
-# init states
-if "greeting_sent" not in st.session_state:
-    st.session_state.greeting_sent = (
-        False  # This flag will track if the greeting has been sent
-    )
-# Set a default model
-if "openai_model" not in st.session_state:
-    st.session_state["openai_model"] = "gpt-4o-mini"
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-if "summary" not in st.session_state:
-    st.session_state.summary = "This is a placeholder for the summary of the content."
-
-if "text_content" not in st.session_state:
-    st.session_state.text_content = ""
-
-# start of the app
-st.title("Content Summarizer and Chat")
 
 
 with st.container():
@@ -144,7 +136,7 @@ with st.container():
         if st.button("Create summary of PDF"):
             if uploaded_file is None:
                 st.write(":red[Please upload a PDF file first.]")
-            if 'user_info' not in st.session_state: # not signed in
+            if not is_signed_in:
                 st.write(":red[Please login to use this feature.]")
             else:
                 pdf_document = fitz.open(stream=uploaded_file.read(), filetype="pdf")
@@ -170,8 +162,7 @@ with st.container():
 
         link = st.text_input("Paste a link", type="default")
         if st.button("Create a summary from the content in the link"):
-            logger.info("TRYKKA KNAPPEN")
-            if 'user_info' not in st.session_state:
+            if not is_signed_in:
                 st.write(":red[Please login to use this feature.]")
             else:
 
