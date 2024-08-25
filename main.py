@@ -1,57 +1,34 @@
 import streamlit as st
 import os
 from openai import OpenAI
-from utility import prompt_gpt, get_openai_client, calculate_price
+from utility import prompt_gpt, get_openai_client, calculate_price, display_credit_bar
 import streamlit as st
-import streamlit_authenticator as stauth
-from streamlit_authenticator import Hasher
 import fitz
 from utility import retrieve_content, get_prompt
 import yaml
-from yaml.loader import SafeLoader
+import auth_functions
 import logging
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-config_file_path = "./config.yaml"
-with open(config_file_path) as file:
-    config = yaml.load(file, Loader=SafeLoader)
 
 # load keys
 open_ai_client = get_openai_client()
 
 
-# Pre-hashing all plain text passwords once
-Hasher.hash_passwords(config["credentials"])
-
-authenticator = stauth.Authenticate(
-    config["credentials"],
-    config["cookie"]["name"],
-    config["cookie"]["key"],
-    config["cookie"]["expiry_days"],
-    config["pre-authorized"],
-)
-
-# authentication code
-
-if "sidebar_visible" not in st.session_state: st.session_state.sidebar_visible = True
-
-if "authentication_status" not in st.session_state: st.session_state["authentication_status"] = False
 
 def toggle_sidebar():
     st.session_state.sidebar_visible = not st.session_state.sidebar_visible
 
 
-# Function to update the config file
-def update_config():
-    with open(config_file_path, "w") as file:
-        yaml.dump(config, file, default_flow_style=False)
-
-
 if st.button("Toggle authentication sidebar"):
     toggle_sidebar()
 st.write("\n")
+
+display_credit_bar(total_credits=10000, remaining_credits=100) #TODO add so you have remaining credits from firebase
+st.write("\n")
+
+
 # add a colored button with a link to my page
 link = "https://buymeacoffee.com/kjosbakken"
 button_text = "Buy me a coffee"
@@ -84,69 +61,53 @@ button_html = f"""
 st.markdown(button_html, unsafe_allow_html=True)
 
 
-if st.session_state.sidebar_visible:
-    with st.sidebar:
-        try:
-            authenticator.login(location="sidebar", clear_on_submit=False)
-            if st.session_state["authentication_status"]:
-                authenticator.logout()
-                st.write(f'Welcome *{st.session_state["name"]}*')
-                st.title("Some content")
-            elif st.session_state["authentication_status"] is False:
-                st.error("Username/password is incorrect")
-            elif st.session_state["authentication_status"] is None:
-                st.warning("Please enter your username and password")
-        except Exception as e:
-            st.error(f"Login failed {str(e)}")
-        try:
-            (
-                email_of_registered_user,
-                username_of_registered_user,
-                name_of_registered_user,
-            ) = authenticator.register_user(
-                location="sidebar", captcha=False, pre_authorization=False, domains=None, clear_on_submit=False
-            )
-            if email_of_registered_user:
-                st.success("User registered successfully")
-            update_config()  # update the config file with the new user
-        except Exception as e:
-            st.error(e)
-
-        try:
-            (
-                username_of_forgotten_password,
-                email_of_forgotten_password,
-                new_random_password,
-            ) = authenticator.forgot_password(location="sidebar")
-            if username_of_forgotten_password:
-                st.success("New password to be sent securely")
-                # The developer should securely transfer the new password to the user.
-            elif username_of_forgotten_password == False:
-                st.error("Username not found")
-        except Exception as e:
-            st.error(e)
-
-        try:
-            username_of_forgotten_username, email_of_forgotten_username = (
-                authenticator.forgot_username(location="sidebar")
-            )
-            if username_of_forgotten_username:
-                st.success("Username to be sent securely")
-                # The developer should securely transfer the username to the user.
-            elif username_of_forgotten_username == False:
-                st.error("Email not found")
-        except Exception as e:
-            st.error(e)
 
 
-    if st.session_state["authentication_status"]:
-        try:
-            if authenticator.reset_password(
-                st.session_state["username"], location="sidebar"
-            ):
-                st.success("Password modified successfully")
-        except Exception as e:
-            st.error(e)
+## Not logged in -----------------------------------------------------------------------------------
+with st.sidebar:
+    if 'user_info' not in st.session_state:
+        col1,col2,col3 = st.columns([1,2,1])
+
+        # Authentication form layout
+        do_you_have_an_account = col2.selectbox(label='Do you have an account?',options=('Yes','No','I forgot my password'))
+        auth_form = col2.form(key='Authentication form',clear_on_submit=False)
+        email = auth_form.text_input(label='Email')
+        password = auth_form.text_input(label='Password',type='password') if do_you_have_an_account in {'Yes','No'} else auth_form.empty()
+        auth_notification = col2.empty()
+
+        # Sign In
+        if do_you_have_an_account == 'Yes' and auth_form.form_submit_button(label='Sign In',use_container_width=True,type='primary'):
+            with auth_notification, st.spinner('Signing in'):
+                auth_functions.sign_in(email,password)
+
+        # Create Account
+        elif do_you_have_an_account == 'No' and auth_form.form_submit_button(label='Create Account',use_container_width=True,type='primary'):
+            with auth_notification, st.spinner('Creating account'):
+                auth_functions.create_account(email,password)
+
+        # Password Reset
+        elif do_you_have_an_account == 'I forgot my password' and auth_form.form_submit_button(label='Send Password Reset Email',use_container_width=True,type='primary'):
+            with auth_notification, st.spinner('Sending password reset link'):
+                auth_functions.reset_password(email)
+
+        # Authentication success and warning messages
+        if 'auth_success' in st.session_state:
+            auth_notification.success(st.session_state.auth_success)
+            del st.session_state.auth_success
+        elif 'auth_warning' in st.session_state:
+            auth_notification.warning(st.session_state.auth_warning)
+            del st.session_state.auth_warning
+
+    ## Logged in --------------------------------------------------------------------------------------
+    else:
+        # Sign out
+        st.header('Sign out:')
+        st.button(label='Sign Out',on_click=auth_functions.sign_out,type='primary')
+
+        # Delete Account
+        st.header('Delete account:')
+        password = st.text_input(label='Confirm your password',type='password')
+        st.button(label='Delete Account',on_click=auth_functions.delete_account,args=[password],type='primary')
 
 
 # init states
@@ -168,8 +129,7 @@ if "text_content" not in st.session_state:
     st.session_state.text_content = ""
 
 # start of the app
-st.title("Summarizer")
-st.write("## Content Summarizer and Chat")
+st.title("Content Summarizer and Chat")
 
 
 with st.container():
@@ -178,12 +138,13 @@ with st.container():
 
     # First column: PDF upload section
     with col1:
-        st.write("Upload a PDF file to summarize and chat with the document.")
+        # st.write("Upload a PDF file to summarize and chat with the document.")
+        st.write("## Upload PDF")
         uploaded_file = st.file_uploader("Choose a PDF file", type="pdf")
         if st.button("Create summary of PDF"):
             if uploaded_file is None:
                 st.write(":red[Please upload a PDF file first.]")
-            if not st.session_state["authentication_status"]:
+            if 'user_info' not in st.session_state: # not signed in
                 st.write(":red[Please login to use this feature.]")
             else:
                 pdf_document = fitz.open(stream=uploaded_file.read(), filetype="pdf")
@@ -205,15 +166,14 @@ with st.container():
 
     # Second column: Link input section
     with col2:
-        st.write(
-            "Link to a podcast, video, or article to summarize and chat with the content. Note that if the content is behind a paywall it cannot be accessed. Consider uploading content as PDF instead."
-        )
+        st.write("## Link to content")
+
         link = st.text_input("Paste a link", type="default")
         if st.button("Create a summary from the content in the link"):
-            if not st.session_state["authentication_status"]:
+            logger.info("TRYKKA KNAPPEN")
+            if 'user_info' not in st.session_state:
                 st.write(":red[Please login to use this feature.]")
             else:
-                st.write(f"Retrieving summary...")
 
                 content = retrieve_content(link)
                 if not content:
@@ -231,8 +191,7 @@ st.write("\n\n")
 # summary section
 with st.container():
     st.write("## Summary")
-    if st.session_state.summary is not None:
-        st.write(st.session_state.summary)
+    st.write(st.session_state.summary)
 
 # chat section
 # with st.container():
