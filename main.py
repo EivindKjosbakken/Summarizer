@@ -8,7 +8,7 @@ import fitz
 from utility import retrieve_content, get_prompt
 import yaml
 import auth_functions
-from firebase_utility import get_user, db
+from firebase_utility import get_user, db, add_user_tokens
 
 
 import logging
@@ -46,10 +46,13 @@ if "remaining_credits" not in st.session_state:
 
 if 'credits_loaded' not in st.session_state:
     st.session_state.credits_loaded = False
+
+login_warning_text = ":red[Please login to use this feature.]"
+
 # start of the app
 
 
-display_credit_bar(total_credits=1000, remaining_credits=st.session_state.remaining_credits) #TODO add so you have remaining credits from firebase
+display_credit_bar(total_credits=2000, remaining_credits=st.session_state.remaining_credits) #TODO add so you have remaining credits from firebase
 st.write("\n")
 
 
@@ -57,26 +60,32 @@ st.write("\n")
 
 st.title("Content Summarizer and Chat")
 
-
 # Stripe payment
 if st.button("Top up credits (redirects to Stripe checkout)"):
-    checkout_url = create_checkout_session()
-    if checkout_url:
-        # Automatically redirect the user to the Stripe Checkout page
-        st.markdown(f"""
-            <meta http-equiv="refresh" content="0; url={checkout_url}">
-            """, unsafe_allow_html=True)
+    if not is_signed_in:
+        st.write(login_warning_text)
+    else:
+        checkout_url = create_checkout_session()
+        if checkout_url:
+            # Automatically redirect the user to the Stripe Checkout page
+            st.markdown(f"""
+                <meta http-equiv="refresh" content="0; url={checkout_url}">
+                """, unsafe_allow_html=True)
 
 
-session_id = st.query_params.get('session_id', None)
-if session_id:
+session_id_param = st.query_params.get('session_id', None)
+email_param = st.query_params.get('email', None)
+if session_id_param and email_param:
     # Check payment status
-    if check_payment_status(session_id):
-        st.success("Payment was successful!")
-        st.balloons()
-        amount_paid, currency = get_payment_amount(session_id)
+    if check_payment_status(session_id_param):
+
+        amount_paid, currency = get_payment_amount(session_id_param)
         assert currency == "usd", "Currency is not USD"
-        # TODO top up credits with amount_paid * 100 == amount of credits in cent 
+        st.success(f"Payment was successful! Added {amount_paid * 100} to your account! Please log in again to use it")
+        st.balloons()
+        add_user_tokens(db, email_param, amount_paid * 100)
+        logger.info(f"Added {amount_paid * 100} credits to user {email_param}")
+
 
     else:
         st.error("Payment failed or was canceled.")
@@ -150,7 +159,7 @@ with st.container():
         uploaded_file = st.file_uploader("Choose a PDF file", type="pdf")
         if st.button("Create summary of PDF"):
             if not is_signed_in:
-                st.write(":red[Please login to use this feature.]")
+                st.write(login_warning_text)
             elif uploaded_file is None:
                 st.write(":red[Please upload a PDF file first.]")
             else:
@@ -178,7 +187,7 @@ with st.container():
         link = st.text_input("Paste a link", type="default")
         if st.button("Create a summary from the content in the link"):
             if not is_signed_in:
-                st.write(":red[Please login to use this feature.]")
+                st.write(login_warning_text)
             else:
 
                 content = retrieve_content(link)
