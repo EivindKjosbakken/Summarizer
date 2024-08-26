@@ -1,10 +1,14 @@
 import streamlit as st
+import os
 import time
 from openai import OpenAI
 import logging
 import re
 from youtube_transcript_api import YouTubeTranscriptApi
 from pytube import YouTube
+from firebase_utility import get_user, db, subtract_user_tokens
+import asyncio
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -15,6 +19,8 @@ PROXY_PORT = st.secrets["PROXY_PORT"]
 PROXY_USERNAME = st.secrets["PROXY_USERNAME"]
 PROXY_PASSWORD = st.secrets["PROXY_PASSWORD"]
 proxy = f"https://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_ADDRESS}:{PROXY_PORT}"
+
+PROFIT_MULTIPLIER = int(os.getenv('PROFIT_MULTIPLIER'))
 
 
 def get_openai_client():
@@ -54,7 +60,23 @@ def calculate_price(input_string, output_string):
     price_nok = price_usd * 10.47
     # print(f"Cost of query: {price_usd:.4f} USD or {price_nok:.4f} NOK ")
     logging.info(f" Cost of query: {price_usd:.4f} USD or {price_nok:.4f} NOK")
+    
+    # subtract_tokens(price_usd)
+    asyncio.run(subtract_tokens(price_usd))
     return price_usd
+
+async def subtract_tokens(usd_spent: float):
+    """subtracts tokens from a user every time they use a service"""
+    cent_spent = usd_spent * 100 # only use cent in db
+    # round to nearest 100
+    cent_spent = round(cent_spent, 4)
+    
+    # get user tokens
+    email = st.session_state.user_info['email']
+    tokens_to_subtract = cent_spent * PROFIT_MULTIPLIER
+    remaining_tokens = subtract_user_tokens(db, email, tokens_to_subtract)
+    print(f"Subtracted {cent_spent} tokens from user {email}. User has {remaining_tokens} tokens left")
+    st.session_state.remaining_tokens = remaining_tokens
 
 
 #TODO lage en youtube agent ellerno?
@@ -117,7 +139,7 @@ def get_prompt(content):
 
 
 def display_credit_bar(total_credits, remaining_credits):
-    st.write(f"Remaining Credits: {remaining_credits}")
+    st.write(f"Remaining Credits: {round(remaining_credits, 4)}")
     percentage_remaining = (remaining_credits / total_credits) * 100
     
     st.markdown(f"""

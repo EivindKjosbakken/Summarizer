@@ -2,6 +2,10 @@ import json
 import requests
 import streamlit as st
 
+from firebase_utility import add_user
+from google.cloud import firestore
+db = firestore.Client.from_service_account_json("firestore-key.json")
+
 ## -------------------------------------------------------------------------------------------------
 ## Firebase Auth API -------------------------------------------------------------------------------
 ## -------------------------------------------------------------------------------------------------
@@ -102,7 +106,11 @@ def create_account(email:str, password:str) -> None:
         # Create account and send email verification
         send_email_verification(id_token)
         st.session_state.auth_success = 'Check your inbox to verify your email'
-    
+        
+        # add entry into db
+        add_user(db, email)
+
+
     except requests.exceptions.HTTPError as error:
         error_message = json.loads(error.args[1])['error']['message']
         if error_message == "EMAIL_EXISTS":
@@ -136,6 +144,7 @@ def reset_password(email:str) -> None:
 def sign_out() -> None:
     st.session_state.clear()
     st.session_state.auth_success = 'You have successfully signed out'
+    st.rerun()
 
 
 def delete_account(password:str) -> None:

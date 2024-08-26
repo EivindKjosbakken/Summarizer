@@ -8,6 +8,9 @@ import fitz
 from utility import retrieve_content, get_prompt
 import yaml
 import auth_functions
+from firebase_utility import get_user, db
+
+
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -16,13 +19,7 @@ logger = logging.getLogger(__name__)
 # load keys
 open_ai_client = get_openai_client()
 
-
-
-# start of the app
-
-
-display_credit_bar(total_credits=10000, remaining_credits=100) #TODO add so you have remaining credits from firebase
-st.write("\n")
+STANDARD_START_TOKENS = int(os.getenv('STANDARD_START_TOKENS'))
 
 # init states
 if "greeting_sent" not in st.session_state:
@@ -44,10 +41,21 @@ if "text_content" not in st.session_state:
 
 is_signed_in = "user_info" in st.session_state
 
+if "remaining_credits" not in st.session_state:
+    st.session_state.remaining_credits = 0 #TODO update this when logging in
+
+if 'credits_loaded' not in st.session_state:
+    st.session_state.credits_loaded = False
+# start of the app
+
+
+display_credit_bar(total_credits=1000, remaining_credits=st.session_state.remaining_credits) #TODO add so you have remaining credits from firebase
+st.write("\n")
+
+
+
 
 st.title("Content Summarizer and Chat")
-
-
 
 
 # Stripe payment
@@ -120,8 +128,15 @@ with st.sidebar:
         st.header('Delete account:')
         password = st.text_input(label='Confirm your password',type='password')
         st.button(label='Delete Account',on_click=auth_functions.delete_account,args=[password],type='primary')
+        
+        email = st.session_state.user_info['email']
+        user_info = get_user(db, email)
+        remaining_tokens = user_info.get("remaining_tokens", 0)
+        st.session_state.remaining_credits = remaining_tokens
 
-
+        if not st.session_state.credits_loaded:
+            st.session_state.credits_loaded = True
+            st.rerun()
 
 
 with st.container():
@@ -134,10 +149,10 @@ with st.container():
         st.write("## Upload PDF")
         uploaded_file = st.file_uploader("Choose a PDF file", type="pdf")
         if st.button("Create summary of PDF"):
-            if uploaded_file is None:
-                st.write(":red[Please upload a PDF file first.]")
             if not is_signed_in:
                 st.write(":red[Please login to use this feature.]")
+            elif uploaded_file is None:
+                st.write(":red[Please upload a PDF file first.]")
             else:
                 pdf_document = fitz.open(stream=uploaded_file.read(), filetype="pdf")
                 full_text = ""
