@@ -4,7 +4,7 @@ import streamlit as st
 
 from firebase_utility import add_user
 from google.cloud import firestore
-db = firestore.Client.from_service_account_json("firestore-key.json")
+from firebase_utility import db
 
 ## -------------------------------------------------------------------------------------------------
 ## Firebase Auth API -------------------------------------------------------------------------------
