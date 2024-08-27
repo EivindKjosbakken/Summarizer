@@ -55,7 +55,7 @@ def create_checkout_session():
             line_items=[
                 {
                     # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-                    'price': 'price_1PriQ8AIc3bSJAkENygPrctC',
+                    'price': 'price_1PsSsWAIc3bSJAkEZJxviyud',
                     'quantity': 1,
                 },
             ],

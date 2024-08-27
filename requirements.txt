@@ -6,3 +6,4 @@ OpenAI
 streamlit-authenticator
 stripe
 google-cloud-firestore
+python-dotenv
