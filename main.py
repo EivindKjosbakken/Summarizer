@@ -305,3 +305,5 @@ else:
                 input_string += message["content"] + "\n"
             calculate_price(input_string, response)
 
+
+st.write("Questions? Reach me at summarymate@gmail.com")
