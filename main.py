@@ -9,7 +9,7 @@ from utility import retrieve_content, get_prompt
 import yaml
 import auth_functions
 from firebase_utility import get_user, db, add_user_tokens
-
+from document_processor import extract_pdf_text, extract_pptx_text
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -42,7 +42,7 @@ if "text_content" not in st.session_state:
 is_signed_in = "user_info" in st.session_state
 
 if "remaining_credits" not in st.session_state:
-    st.session_state.remaining_credits = 0 #TODO update this when logging in
+    st.session_state.remaining_credits = 0 
 
 if 'credits_loaded' not in st.session_state:
     st.session_state.credits_loaded = False
@@ -178,6 +178,8 @@ with st.sidebar:
             st.rerun()
 
 
+
+
 with st.container():
     st.write("---")
     col1, col2 = st.columns(2)
@@ -186,20 +188,21 @@ with st.container():
     with col1:
         # st.write("Upload a PDF file to summarize and chat with the document.")
         st.write("## Upload PDF")
-        uploaded_file = st.file_uploader("Choose a PDF file", type="pdf")
-        if st.button("Create summary of PDF"):
+        uploaded_file = st.file_uploader("Choose a PDF file", type=["pdf", "pptx"])
+        if st.button("Create summary"):
             if not is_signed_in:
                 st.write(login_warning_text)
             elif uploaded_file is None:
                 st.write(":red[Please upload a PDF file first.]")
             else:
-                pdf_document = fitz.open(stream=uploaded_file.read(), filetype="pdf")
-                full_text = ""
-                for page_number in range(pdf_document.page_count):
-                    page = pdf_document.load_page(page_number)
-                    page_text = page.get_text("text")
-                    full_text += page_text + "\n\n"
-                pdf_document.close()
+                if uploaded_file.type == "application/pdf":
+                    full_text = extract_pdf_text(uploaded_file)
+                elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+                    full_text = extract_pptx_text(uploaded_file)
+                else:
+                    raise ValueError("Unsupported file type. Please upload a PDF file.")
+
+                
                 st.session_state.text_content = full_text
 
                 # TODO remove after testing
