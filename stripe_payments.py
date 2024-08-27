@@ -1,6 +1,10 @@
 import streamlit as st
 import stripe
 import logging
+import os
+from urllib.parse import urlencode
+from dotenv import load_dotenv
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -8,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 # This is your test secret API key.
 stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
+APP_URL = os.getenv("APP_URL")
 
 
 def check_payment_status(session_id):
@@ -44,6 +49,7 @@ def get_payment_amount(session_id):
    
 def create_checkout_session():
     try:
+        email = st.session_state.user_info["email"]
         session = stripe.checkout.Session.create(
             # ui_mode = 'embedded',
             line_items=[
@@ -56,8 +62,9 @@ def create_checkout_session():
             mode='payment',
             # return_url="https://summarymate.streamlit.app/" + '/return.html?session_id={CHECKOUT_SESSION_ID}',
             # return_url="http://localhost:8504/" + '/return.html?session_id={CHECKOUT_SESSION_ID}',
-            success_url="http://localhost:8503/?session_id={CHECKOUT_SESSION_ID}",  # TODO Update this with your actual success URL
-            cancel_url="http://localhost:8503/", 
+            success_url = f"{APP_URL}?session_id={{CHECKOUT_SESSION_ID}}&email={email}",
+            cancel_url=APP_URL
+
         )
         return session.url
     except Exception as e:
@@ -65,8 +72,3 @@ def create_checkout_session():
 
 
 
-
-# TODO legge success tekst hvis du kjøpte tokens + ballonger kanskje! 
-# TODO oppdatere credits i firebase etter kjøp
-# TODO legge til hvis kjøp feiler
-# TODO automatisk refill er nok bedre enn subscription!
