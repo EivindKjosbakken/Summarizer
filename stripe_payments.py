@@ -9,6 +9,9 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+PRICE_ID_TOP_UP_5_USD = os.getenv("PRICE_ID_TOP_UP_5_USD")
+PRICE_ID_TOP_UP_10_USD = os.getenv("PRICE_ID_TOP_UP_10_USD")
+
 
 # This is your test secret API key.
 stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
@@ -47,8 +50,8 @@ def get_payment_amount(session_id):
         return None, None
    
 def create_checkout_session(item_purcahse):
-    if item_purcahse == "10usd": price_id = "price_1PriQ8AIc3bSJAkENygPrctC" # TODO update these values TO LIVE PRODUCTION
-    elif item_purcahse == "5usd": price_id = "price_1PsTsvAIc3bSJAkE5IfkBdWV" # TODO update these values TO LIVE PRODUCTION
+    if item_purcahse == "5usd": price_id = PRICE_ID_TOP_UP_5_USD # TODO update these values TO LIVE PRODUCTION
+    elif item_purcahse == "10usd": price_id = PRICE_ID_TOP_UP_10_USD # TODO update these values TO LIVE PRODUCTION
 
     try:
         email = st.session_state.user_info["email"]
