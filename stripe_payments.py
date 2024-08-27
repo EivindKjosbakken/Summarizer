@@ -50,12 +50,13 @@ def get_payment_amount(session_id):
 def create_checkout_session():
     try:
         email = st.session_state.user_info["email"]
+
         session = stripe.checkout.Session.create(
             # ui_mode = 'embedded',
             line_items=[
                 {
                     # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-                    'price': 'price_1PsSsWAIc3bSJAkEZJxviyud',
+                    'price': 'price_1PriQ8AIc3bSJAkENygPrctC',
                     'quantity': 1,
                 },
             ],
