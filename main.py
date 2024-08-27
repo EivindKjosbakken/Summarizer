@@ -209,7 +209,6 @@ with st.container():
     st.write(st.session_state.summary)
 
 # chat section
-# with st.container():
 st.write("## Chat")
 
 if st.session_state.summary is None:
@@ -235,41 +234,44 @@ else:
     if (
         prompt
     ):  # NOTE do not have container, that messes up so chat gets below the prompt
-        with st.chat_message("user"):
-            st.markdown(prompt)
-        # Add user message to chat history
-        st.session_state.messages.append({"role": "user", "content": prompt})
+        if not is_signed_in:
+            st.warning("Please sign in to use the chat function.")
+        else:
+            with st.chat_message("user"):
+                st.markdown(prompt)
+            # Add user message to chat history
+            st.session_state.messages.append({"role": "user", "content": prompt})
 
-        # Prepare the messages for the GPT model
-        messages = [
-            {"role": m["role"], "content": m["content"]}
-            for m in st.session_state.messages
-        ]
+            # Prepare the messages for the GPT model
+            messages = [
+                {"role": m["role"], "content": m["content"]}
+                for m in st.session_state.messages
+            ]
 
-        # insert a new message first in the messages array
-        messages.insert(
-            0,
-            {
-                "role": "user",
-                "content": f"Answer given the following context {st.session_state.text_content}. Keep your answers concise.",
-            },
-        )
-
-        # Generate a response using the GPT model
-        with st.chat_message("assistant"):
-            stream = open_ai_client.chat.completions.create(
-                model=st.session_state["openai_model"],
-                messages=messages,
-                stream=True,
+            # insert a new message first in the messages array
+            messages.insert(
+                0,
+                {
+                    "role": "user",
+                    "content": f"Answer given the following context {st.session_state.text_content}. Keep your answers concise.",
+                },
             )
 
-            # Display assistant response in chat message container
-            response = st.write_stream(stream)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+            # Generate a response using the GPT model
+            with st.chat_message("assistant"):
+                stream = open_ai_client.chat.completions.create(
+                    model=st.session_state["openai_model"],
+                    messages=messages,
+                    stream=True,
+                )
 
-        # calculate price of gpt call
-        input_string = ""
-        for message in messages:
-            input_string += message["content"] + "\n"
-        calculate_price(input_string, response)
+                # Display assistant response in chat message container
+                response = st.write_stream(stream)
+            st.session_state.messages.append({"role": "assistant", "content": response})
+
+            # calculate price of gpt call
+            input_string = ""
+            for message in messages:
+                input_string += message["content"] + "\n"
+            calculate_price(input_string, response)
 

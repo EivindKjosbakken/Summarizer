@@ -34,6 +34,13 @@ def get_openai_client():
 
 
 def prompt_gpt(*, open_ai_client, prompt):
+    # first check if user has remaining credits
+    email = st.session_state.user_info['email']
+    user = get_user(db, email)
+    remaining_tokens = user['remaining_tokens']
+    if remaining_tokens <= 0:
+        st.error("You have no remaining credits. Please top up to continue.")
+        return
     response_text = (
         open_ai_client.chat.completions.create(
             model="gpt-4o-mini",
