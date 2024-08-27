@@ -56,23 +56,53 @@ display_credit_bar(total_credits=2000, remaining_credits=st.session_state.remain
 st.write("\n")
 
 
-
+def load_button_html(button_text="Top up credits"):
+    """load nicely styled button html for redirects"""
+    hover_css = """
+    <style>
+    .stripe-button {
+        display: inline-block;
+        padding: 15px 32px;
+        font-size: 16px;
+        color: white !important; /* Ensure text color is white */
+        background-color: #008CBA;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 12px;
+        cursor: pointer;
+        margin: 4px 2px;
+        border: none;
+        transition: background-color 0.3s ease;
+    }
+    .stripe-button:hover {
+        background-color: #005f73;
+        color: white !important; /* Ensure text color remains white on hover */
+    }
+    </style>
+    """
+    button_html = f'''
+    {hover_css}
+    <a href="{checkout_url_5_usd}" target="_blank" class="stripe-button">{button_text}</a>
+    '''
+    return button_html
 
 st.title("Content Summarizer and Chat")
 
 # Stripe payment
-if st.button("Top up credits (redirects to Stripe checkout)"):
+if st.button("Top up credits"):
     if not is_signed_in:
         st.write(login_warning_text)
     else:
-        checkout_url = create_checkout_session()
-        if checkout_url:
-            # Automatically redirect the user to the Stripe Checkout page
-            st.markdown(f"""
-                <meta http-equiv="refresh" content="0; url={checkout_url}">
-                """, unsafe_allow_html=True)
+        checkout_url_5_usd = create_checkout_session("5usd")
+        checkout_url_10_usd = create_checkout_session("10usd")
+        
+        st.write("Choose a payment amount...")
+        if checkout_url_5_usd and checkout_url_10_usd: 
+            with st.container():
+                st.markdown(load_button_html("Top up 5 USD"), unsafe_allow_html=True)
+                st.markdown(load_button_html("Top up 10 USD"), unsafe_allow_html=True)
 
-
+            
 session_id_param = st.query_params.get('session_id', None)
 email_param = st.query_params.get('email', None)
 if session_id_param and email_param:

@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
 APP_URL = os.getenv("APP_URL")
 
-
 def check_payment_status(session_id):
     try:
         session = stripe.checkout.Session.retrieve(session_id)
@@ -47,7 +46,10 @@ def get_payment_amount(session_id):
         print(f"Error retrieving payment details: {e}")
         return None, None
    
-def create_checkout_session():
+def create_checkout_session(item_purcahse):
+    if item_purcahse == "10usd": price_id = "price_1PriQ8AIc3bSJAkENygPrctC" # TODO update these values TO LIVE PRODUCTION
+    elif item_purcahse == "5usd": price_id = "price_1PsTsvAIc3bSJAkE5IfkBdWV" # TODO update these values TO LIVE PRODUCTION
+
     try:
         email = st.session_state.user_info["email"]
 
@@ -55,8 +57,7 @@ def create_checkout_session():
             # ui_mode = 'embedded',
             line_items=[
                 {
-                    # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-                    'price': 'price_1PriQ8AIc3bSJAkENygPrctC',
+                    'price': price_id,
                     'quantity': 1,
                 },
             ],
