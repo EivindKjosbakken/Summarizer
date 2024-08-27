@@ -56,7 +56,7 @@ display_credit_bar(total_credits=2000, remaining_credits=st.session_state.remain
 st.write("\n")
 
 
-def load_button_html(button_text="Top up credits"):
+def load_button_html(checkout_url, button_text="Top up credits"):
     """load nicely styled button html for redirects"""
     hover_css = """
     <style>
@@ -82,7 +82,7 @@ def load_button_html(button_text="Top up credits"):
     """
     button_html = f'''
     {hover_css}
-    <a href="{checkout_url_5_usd}" target="_blank" class="stripe-button">{button_text}</a>
+    <a href="{checkout_url}" target="_blank" class="stripe-button">{button_text}</a>
     '''
     return button_html
 
@@ -99,8 +99,8 @@ if st.button("Top up credits"):
         st.write("Choose a payment amount...")
         if checkout_url_5_usd and checkout_url_10_usd: 
             with st.container():
-                st.markdown(load_button_html("Top up 5 USD"), unsafe_allow_html=True)
-                st.markdown(load_button_html("Top up 10 USD"), unsafe_allow_html=True)
+                st.markdown(load_button_html(checkout_url_5_usd, "Top up 5 USD"), unsafe_allow_html=True)
+                st.markdown(load_button_html(checkout_url_10_usd, "Top up 10 USD"), unsafe_allow_html=True)
 
             
 session_id_param = st.query_params.get('session_id', None)
