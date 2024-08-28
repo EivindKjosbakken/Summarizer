@@ -210,7 +210,7 @@ with st.container():
                 # TODO remove after testing
                 # if len(full_text) > 10000: full_text = full_text[:10000]
 
-                prompt = "Summarize this document: " + full_text
+                prompt = "Summarize this: " + full_text
 
                 response_text = prompt_gpt(open_ai_client=open_ai_client, prompt=prompt)
                 st.session_state.summary = response_text
