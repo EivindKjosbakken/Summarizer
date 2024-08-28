@@ -22,6 +22,22 @@ proxy = f"https://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_ADDRESS}:{PROXY_PORT}
 
 PROFIT_MULTIPLIER = int(os.getenv('PROFIT_MULTIPLIER'))
 
+all_languages = [  # NOTE english is first since it has priority
+    "en", "de", "fr", "ab", "aa", "af", "ak", "sq", "am", "ar", "hy", "as", "ay", "az", "bn", 
+    "ba", "eu", "be", "bho", "bs", "br", "bg", "my", "ca", "ceb", "zh-Hans", 
+    "zh-Hant", "co", "hr", "cs", "da", "dv", "nl", "dz", "eo", "et", 
+    "ee", "fo", "fj", "fil", "fi", "gaa", "gl", "lg", "ka", 
+    "el", "gn", "gu", "ht", "ha", "haw", "iw", "hi", "hmn", "hu", "is", 
+    "ig", "id", "ga", "it", "ja", "jv", "kl", "kn", "kk", "kha", "km", 
+    "rw", "ko", "kri", "ku", "ky", "lo", "la", "lv", "ln", "lt", "luo", 
+    "lb", "mk", "mg", "ms", "ml", "mt", "gv", "mi", "mr", "mn", "mfe", 
+    "ne", "new", "nso", "no", "ny", "oc", "or", "om", "os", "pam", "ps", 
+    "fa", "pl", "pt", "pt-PT", "pa", "qu", "ro", "rn", "ru", "sm", "sg", 
+    "sa", "gd", "sr", "crs", "sn", "sd", "si", "sk", "sl", "so", "st", 
+    "es", "su", "sw", "ss", "sv", "tg", "ta", "tt", "te", "th", "bo", 
+    "ti", "to", "ts", "tn", "tum", "tr", "tk", "uk", "ur", "ug", "uz", 
+    "ve", "vi", "war", "cy", "fy", "wo", "xh", "yi", "yo", "zu"
+]
 
 def get_openai_client():
     OPEN_AI_API_KEY = st.secrets["OPEN_AI_API_KEY"]
@@ -101,7 +117,7 @@ def extract_text_youtube(video_id):
     for _ in range(5): # try up to 5 times, wait 1 sec if it fails
         try:
             # caption = YouTubeTranscriptApi.get_transcript(video_id)
-            caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy}, languages=["en", "no", "de"]) #TODO add more languages
+            caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy}, languages=all_languages) 
             text = " ".join([x["text"] for x in caption])
             return text
         except Exception as e:
@@ -142,7 +158,7 @@ def retrieve_content(link: str):
 
 def get_prompt(content):
     """get prompt for summary"""
-    return f"Summarize this document: {content}"
+    return f"Summarize this: {content}"
 
 
 def display_credit_bar(total_credits, remaining_credits):
