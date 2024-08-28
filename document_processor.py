@@ -1,7 +1,7 @@
 from pptx import Presentation
 import fitz
-
-
+import textract
+import os
 
 def extract_pdf_text(uploaded_file):
     pdf_document = fitz.open(stream=uploaded_file.read(), filetype="pdf")
@@ -13,12 +13,15 @@ def extract_pdf_text(uploaded_file):
     pdf_document.close()
     return full_text
 
-def extract_pptx_text(uploaded_file):
-    ppt = Presentation(uploaded_file)
-    full_text = ""
-    for slide in ppt.slides:
-        for shape in slide.shapes:
-            if hasattr(shape, "text"):
-                full_text += shape.text + " "
-    return full_text
-    
+
+def extract_text_textract(uploaded_file):
+    """extracts text for pdf, pptx, doc, docx, txt with textract python pacakge. A temp file has to be created to connect st.upload_file and the textract package"""
+    bytes_data = uploaded_file.getvalue()
+    suffix = uploaded_file.name.split(".")[-1]
+    temp_file_path = f"temp_file.{suffix}"
+    f = open(temp_file_path, 'wb')
+    f.write(bytes_data)
+    f.close()
+    text = textract.process(temp_file_path).decode("utf-8").replace("\n", " ").replace("  ", " ")
+    os.remove(temp_file_path)
+    return text

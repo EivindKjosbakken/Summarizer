@@ -9,7 +9,7 @@ from utility import retrieve_content, get_prompt
 import yaml
 import auth_functions
 from firebase_utility import get_user, db, add_user_tokens
-from document_processor import extract_pdf_text, extract_pptx_text
+from document_processor import extract_pdf_text, extract_text_textract
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -188,17 +188,19 @@ with st.container():
     with col1:
         # st.write("Upload a PDF file to summarize and chat with the document.")
         st.write("## Upload PDF")
-        uploaded_file = st.file_uploader("Choose a PDF file", type=["pdf", "pptx"])
+        uploaded_file = st.file_uploader("Choose a PDF file", type=["pdf", "pptx", "doc", "docx", "txt"])
         if st.button("Create summary"):
             if not is_signed_in:
                 st.write(login_warning_text)
             elif uploaded_file is None:
                 st.write(":red[Please upload a PDF file first.]")
             else:
-                if uploaded_file.type == "application/pdf":
+                suffix = uploaded_file.name.split(".")[-1]
+
+                if suffix == "pdf":
                     full_text = extract_pdf_text(uploaded_file)
-                elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-                    full_text = extract_pptx_text(uploaded_file)
+                elif suffix in ["pptx", "doc", "docx", "txt"]: # use textract python package
+                    full_text = extract_text_textract(uploaded_file)
                 else:
                     raise ValueError("Unsupported file type. Please upload a PDF file.")
 
@@ -206,7 +208,7 @@ with st.container():
                 st.session_state.text_content = full_text
 
                 # TODO remove after testing
-                if len(full_text) > 10000: full_text = full_text[:10000]
+                # if len(full_text) > 10000: full_text = full_text[:10000]
 
                 prompt = "Summarize this document: " + full_text
 
