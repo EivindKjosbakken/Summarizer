@@ -7,3 +7,4 @@ streamlit-authenticator
 stripe
 google-cloud-firestore
 python-dotenv
+python-pptx
