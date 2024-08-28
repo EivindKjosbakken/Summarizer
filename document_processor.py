@@ -1,4 +1,3 @@
-from pptx import Presentation
 import fitz
 import textract
 import os
