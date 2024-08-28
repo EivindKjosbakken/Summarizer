@@ -101,7 +101,7 @@ def extract_text_youtube(video_id):
     for _ in range(5): # try up to 5 times, wait 1 sec if it fails
         try:
             # caption = YouTubeTranscriptApi.get_transcript(video_id)
-            caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy})
+            caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy}, languages=["en", "no", "de"]) #TODO add more languages
             text = " ".join([x["text"] for x in caption])
             return text
         except Exception as e:
