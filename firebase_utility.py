@@ -61,3 +61,9 @@ def subtract_user_tokens(db, email, tokens):
 		print("Successfully subtracted tokens")
 		return remaining_tokens
 	else: raise ValueError("User does not exist. Did not subtract tokens")
+
+def get_remaining_tokens():
+	email = st.session_state.user_info['email']
+	user = get_user(db, email)
+	remaining_tokens = user['remaining_tokens']
+	return remaining_tokens

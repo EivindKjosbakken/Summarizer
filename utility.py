@@ -39,67 +39,6 @@ all_languages = [  # NOTE english is first since it has priority
     "ve", "vi", "war", "cy", "fy", "wo", "xh", "yi", "yo", "zu"
 ]
 
-def get_openai_client():
-    OPEN_AI_API_KEY = st.secrets["OPEN_AI_API_KEY"]
-    assert (
-        OPEN_AI_API_KEY is not None
-        and OPEN_AI_API_KEY.startswith("sk-p")
-        and OPEN_AI_API_KEY.endswith("kUA")
-    ), "OpenAI API key is not set."
-    return OpenAI(api_key=OPEN_AI_API_KEY)
-
-
-def prompt_gpt(*, open_ai_client, prompt):
-    # first check if user has remaining credits
-    email = st.session_state.user_info['email']
-    user = get_user(db, email)
-    remaining_tokens = user['remaining_tokens']
-    if remaining_tokens <= 0:
-        st.error("You have no remaining credits. Please top up to continue.")
-        return
-    response_text = (
-        open_ai_client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": prompt},
-            ],
-        )
-        .choices[0]
-        .message.content
-    )
-    calculate_price(prompt, response_text)
-    return response_text
-
-
-def calculate_price(input_string, output_string):
-    # first convert the input and output strings to tokens
-    input_tokens = len(input_string.replace("\n", " ").split()) / 0.75
-    output_tokens = len(output_string.replace("\n", " ").split()) / 0.75
-    # calculate the price in USD
-    INPUT_TOKEN_PRICE = 0.15 / 1e6  # price per token
-    OUTPUT_TOKEN_PRICE = 0.60 / 1e6
-    price_usd = input_tokens * INPUT_TOKEN_PRICE + output_tokens * OUTPUT_TOKEN_PRICE
-    price_nok = price_usd * 10.47
-    # print(f"Cost of query: {price_usd:.4f} USD or {price_nok:.4f} NOK ")
-    logging.info(f" Cost of query: {price_usd:.4f} USD or {price_nok:.4f} NOK")
-    
-    # subtract_tokens(price_usd)
-    asyncio.run(subtract_tokens(price_usd))
-    return price_usd
-
-async def subtract_tokens(usd_spent: float):
-    """subtracts tokens from a user every time they use a service"""
-    cent_spent = usd_spent * 100 # only use cent in db
-    # round to nearest 100
-    cent_spent = round(cent_spent, 4)
-    
-    # get user tokens
-    email = st.session_state.user_info['email']
-    tokens_to_subtract = cent_spent * PROFIT_MULTIPLIER
-    remaining_tokens = subtract_user_tokens(db, email, tokens_to_subtract)
-    print(f"Subtracted {cent_spent} tokens from user {email}. User has {remaining_tokens} tokens left")
-    st.session_state.remaining_tokens = remaining_tokens
 
 
 #TODO lage en youtube agent ellerno?
@@ -156,9 +95,7 @@ def retrieve_content(link: str):
     return None
 
 
-def get_prompt(content):
-    """get prompt for summary"""
-    return f"Summarize this: {content}"
+
 
 
 def display_credit_bar(total_credits, remaining_credits):

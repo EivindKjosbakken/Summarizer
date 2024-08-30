@@ -1,11 +1,13 @@
 import streamlit as st
 import os
 from openai import OpenAI
-from utility import prompt_gpt, get_openai_client, calculate_price, display_credit_bar
+
+from llm_agent import LlmAgent
+from utility import display_credit_bar
 from stripe_payments import create_checkout_session, get_payment_amount, check_payment_status
 import streamlit as st
 import fitz
-from utility import retrieve_content, get_prompt
+from utility import retrieve_content
 import yaml
 import auth_functions
 from firebase_utility import get_user, db, add_user_tokens
@@ -16,8 +18,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# load keys
-open_ai_client = get_openai_client()
+llm_agent = LlmAgent()
+
 
 STANDARD_START_TOKENS = int(os.getenv('STANDARD_START_TOKENS'))
 
@@ -212,7 +214,7 @@ with st.container():
 
                 prompt = "Summarize this: " + full_text
 
-                response_text = prompt_gpt(open_ai_client=open_ai_client, prompt=prompt)
+                response_text = llm_agent.prompt_gpt(prompt=prompt)
                 st.session_state.summary = response_text
 
     # Second column: Link input section
@@ -229,10 +231,10 @@ with st.container():
                 if not content:
                     st.write("Could not retrieve content from the link.")
                 else:
-                    if len(content) > 10000: content = content[:10000] #TODO remove later 
+                    # if len(content) > 10000: content = content[:10000] #TODO remove later 
                     st.session_state.text_content = content
-                    prompt = get_prompt(content)
-                    response_text = prompt_gpt(open_ai_client=open_ai_client, prompt=prompt)
+                    prompt = llm_agent.get_prompt(content)
+                    response_text = llm_agent.prompt_gpt(prompt=prompt)
                     st.session_state.summary = response_text
 
 
@@ -294,11 +296,7 @@ else:
 
             # Generate a response using the GPT model
             with st.chat_message("assistant"):
-                stream = open_ai_client.chat.completions.create(
-                    model=st.session_state["openai_model"],
-                    messages=messages,
-                    stream=True,
-                )
+                stream = llm_agent.prompt_gpt_stream(messages=messages)
 
                 # Display assistant response in chat message container
                 response = st.write_stream(stream)
@@ -308,7 +306,7 @@ else:
             input_string = ""
             for message in messages:
                 input_string += message["content"] + "\n"
-            calculate_price(input_string, response)
+            llm_agent.calculate_price(input_string, response)
 
 with st.sidebar: 
     st.write("## Contact")
