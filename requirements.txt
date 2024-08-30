@@ -7,8 +7,5 @@ streamlit-authenticator
 stripe
 google-cloud-firestore
 python-dotenv
-six
-pandas
-extract-msg<=0.29
-textract
 python-pptx
+python-docx
