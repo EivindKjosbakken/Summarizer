@@ -8,4 +8,5 @@ stripe
 google-cloud-firestore
 python-dotenv
 python-pptx
+pandas
 textract
