@@ -1,14 +1,11 @@
 import streamlit as st
 import os
-from openai import OpenAI
-
 from llm_agent import LlmAgent
 from utility import display_credit_bar
 from stripe_payments import create_checkout_session, get_payment_amount, check_payment_status
 import streamlit as st
 import fitz
 from utility import retrieve_content
-import yaml
 import auth_functions
 from firebase_utility import get_user, db, add_user_tokens
 from document_processor import extract_pdf_text, extract_text_textract
@@ -181,7 +178,6 @@ with st.sidebar:
 
 
 
-
 with st.container():
     st.write("---")
     col1, col2 = st.columns(2)
@@ -191,29 +187,23 @@ with st.container():
         # st.write("Upload a PDF file to summarize and chat with the document.")
         st.write("## Upload PDF")
         uploaded_file = st.file_uploader("Choose a PDF file", type=["pdf", "pptx", "doc", "docx", "txt"])
+        if (uploaded_file):
+            suffix = uploaded_file.name.split(".")[-1]
+            if suffix == "pdf":
+                full_text = extract_pdf_text(uploaded_file)
+            elif suffix in ["pptx", "doc", "docx", "txt"]: # use textract python package
+                full_text = extract_text_textract(uploaded_file)
+            else:
+                raise ValueError("Unsupported file type. Please upload a PDF file.")
+            st.session_state.text_content = full_text
+            
         if st.button("Create summary"):
             if not is_signed_in:
                 st.write(login_warning_text)
             elif uploaded_file is None:
                 st.write(":red[Please upload a PDF file first.]")
             else:
-                suffix = uploaded_file.name.split(".")[-1]
-
-                if suffix == "pdf":
-                    full_text = extract_pdf_text(uploaded_file)
-                elif suffix in ["pptx", "doc", "docx", "txt"]: # use textract python package
-                    full_text = extract_text_textract(uploaded_file)
-                else:
-                    raise ValueError("Unsupported file type. Please upload a PDF file.")
-
-                
-                st.session_state.text_content = full_text
-
-                # TODO remove after testing
-                # if len(full_text) > 10000: full_text = full_text[:10000]
-
                 prompt = "Summarize this: " + full_text
-
                 response_text = llm_agent.prompt_gpt(prompt=prompt)
                 st.session_state.summary = response_text
 
@@ -226,12 +216,10 @@ with st.container():
             if not is_signed_in:
                 st.write(login_warning_text)
             else:
-
                 content = retrieve_content(link)
                 if not content:
                     st.write("Could not retrieve content from the link.")
                 else:
-                    # if len(content) > 10000: content = content[:10000] #TODO remove later 
                     st.session_state.text_content = content
                     prompt = llm_agent.get_prompt(content)
                     response_text = llm_agent.prompt_gpt(prompt=prompt)

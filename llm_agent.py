@@ -1,7 +1,4 @@
-from firebase_utility import get_user, db, subtract_user_tokens, get_remaining_tokens
-
-
-
+from firebase_utility import db, subtract_user_tokens, get_remaining_tokens
 import streamlit as st
 from openai import OpenAI
 import asyncio

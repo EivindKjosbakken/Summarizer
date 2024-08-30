@@ -2,7 +2,6 @@ import streamlit as st
 import stripe
 import logging
 import os
-from urllib.parse import urlencode
 from dotenv import load_dotenv
 load_dotenv()
 

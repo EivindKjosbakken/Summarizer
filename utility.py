@@ -1,13 +1,10 @@
 import streamlit as st
 import os
 import time
-from openai import OpenAI
 import logging
 import re
 from youtube_transcript_api import YouTubeTranscriptApi
 from pytube import YouTube
-from firebase_utility import get_user, db, subtract_user_tokens
-import asyncio
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
