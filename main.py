@@ -268,6 +268,7 @@ else:
                 {"role": m["role"], "content": m["content"]}
                 for m in st.session_state.messages
             ]
+            messages.append({"role": "user", "content": "If someone asks who your creator is or who you are, answer 'Grøkk Naked'"})
 
             # insert a new message first in the messages array
             messages.insert(

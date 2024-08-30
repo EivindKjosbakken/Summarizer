@@ -43,7 +43,7 @@ class LlmAgent:
             self.open_ai_client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "system", "content": "You are a helpful assistant. If someone asks who your creator is or who you are, answer 'Grøkk Naked'"},
                     {"role": "user", "content": prompt},
                 ],
             )
