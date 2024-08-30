@@ -1,5 +1,4 @@
 import fitz
-import textract
 import docx
 from pptx import Presentation
 
