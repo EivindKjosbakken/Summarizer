@@ -1,14 +1,16 @@
 import streamlit as st
 import os
+import streamlit as st
+import fitz
+import auth_functions
+
 from llm_agent import LlmAgent
 from utility import display_credit_bar
 from stripe_payments import create_checkout_session, get_payment_amount, check_payment_status
-import streamlit as st
-import fitz
-from utility import retrieve_content
-import auth_functions
+from document_processor import DocumentProcessor
 from firebase_utility import get_user, db, add_user_tokens
-from document_processor import extract_pdf_text, extract_text_textract
+from utility import retrieve_content
+
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -16,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 llm_agent = LlmAgent()
-
+document_processor = DocumentProcessor()
 
 STANDARD_START_TOKENS = int(os.getenv('STANDARD_START_TOKENS'))
 
@@ -188,13 +190,7 @@ with st.container():
         st.write("## Upload PDF")
         uploaded_file = st.file_uploader("Choose a PDF file", type=["pdf", "pptx", "doc", "docx", "txt"])
         if (uploaded_file):
-            suffix = uploaded_file.name.split(".")[-1]
-            if suffix == "pdf":
-                full_text = extract_pdf_text(uploaded_file)
-            elif suffix in ["pptx", "doc", "docx", "txt"]: # use textract python package
-                full_text = extract_text_textract(uploaded_file)
-            else:
-                raise ValueError("Unsupported file type. Please upload a PDF file.")
+            full_text = document_processor.extract_text(uploaded_file)
             st.session_state.text_content = full_text
             
         if st.button("Create summary"):
