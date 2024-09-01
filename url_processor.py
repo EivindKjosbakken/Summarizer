@@ -37,10 +37,10 @@ aai.settings.api_key = ASSEMBLY_AI_API_KEY
 PROXY_PASSWORD = st.secrets["PROXY_PASSWORD"]
 
 proxy_ports = ["5868", "5128", "6732", "6754", "5735"]
-proxy_usernames = ["ldsiesvc" for _ in range(len(proxy_ports))]
+proxy_usernames = ["ldsiesvc2" for _ in range(len(proxy_ports))]
 proxy_addresses = ["38.154.227.167", "45.127.248.127", "64.64.118.149", "167.160.180.203", "166.88.58.10"]
 
-
+# TODO legge disse til i separate filer
 all_youtube_languages = [  # NOTE english is first since it has priority
     "en", "de", "fr", "ab", "aa", "af", "ak", "sq", "am", "ar", "hy", "as", "ay", "az", "bn", 
     "ba", "eu", "be", "bho", "bs", "br", "bg", "my", "ca", "ceb", "zh-Hans", 
@@ -200,14 +200,16 @@ class URLProcessor:
         for proxy_username, proxy_port, proxy_address in zip(proxy_usernames, proxy_ports, proxy_addresses):
             logger.info("Choosing new proxy")
             proxy_http = f"https://{proxy_username}:{PROXY_PASSWORD}@{proxy_address}:{proxy_port}" # using webshare.io proxies
+            proxies = {"http": proxy_http, "https": proxy_http}
+                
             try:
-                caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy_http}, languages=all_youtube_languages) #  http is supposed to point to proxy_https, doesnt work otherwise
+                caption = YouTubeTranscriptApi.get_transcript(video_id, proxies=proxies, languages=all_youtube_languages) #  http is supposed to point to proxy_https, doesnt work otherwise
                 text = " ".join([x["text"] for x in caption])
                 return text
             except Exception as e:
                 print(f"Error: {e}")
                 logger.info(f"Error when extracting text from youtube video: {e}")
-                time.sleep(3)
+                time.sleep(5)
                 logger.info("Retrying...")
 
     def _extract_title_youtube(self, video_url):
