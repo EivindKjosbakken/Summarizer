@@ -54,7 +54,7 @@ def extract_text_youtube(video_id):
     for _ in range(10): # try up to 10 times, wait .5 sec if it fails
         try:
             # caption = YouTubeTranscriptApi.get_transcript(video_id)
-            caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy_http, "https": proxy_https}, languages=all_languages) 
+            caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy_https, "https": proxy_https}, languages=all_languages) #  http is supposed to point to proxy_https, doesnt work otherwise
             text = " ".join([x["text"] for x in caption])
             return text
         except Exception as e:
