@@ -35,7 +35,7 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 if "summary" not in st.session_state:
-    st.session_state.summary = "This is a placeholder for the summary of the content."
+    st.session_state.summary = ""
 
 if "text_content" not in st.session_state:
     st.session_state.text_content = ""
@@ -291,7 +291,16 @@ st.write("\n\n")
 # summary section
 with st.container():
     st.write("## Summary")
-    st.write(st.session_state.summary)
+    # st.write(st.session_state.summary)
+
+    # with st.expander("## Summary", expanded=True):
+    #     st.write(st.session_state.summary)
+    if (st.session_state.summary != ""):
+        st.markdown(f"""
+            <div style="border: 1px solid black; padding: 10px; border-radius: 10px; background-color: #f9f9f9;">
+                {st.session_state.summary}
+            </div>
+            """, unsafe_allow_html=True)
 
 # chat section
 st.write("## Chat")
