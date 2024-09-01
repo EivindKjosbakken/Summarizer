@@ -33,13 +33,13 @@ ASSEMBLY_AI_API_KEY = st.secrets["ASSEMBLY_AI_API_KEY"]
 aai.settings.api_key = ASSEMBLY_AI_API_KEY
 
 
+# from oculos proxies
 PROXY_ADDRESS = st.secrets["PROXY_ADDRESS"]
 PROXY_PORT = st.secrets["PROXY_PORT"]
 PROXY_USERNAME = st.secrets["PROXY_USERNAME"]
 PROXY_PASSWORD = st.secrets["PROXY_PASSWORD"]
 proxy_https = f"https://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_ADDRESS}:{PROXY_PORT}"
 
-PROFIT_MULTIPLIER = int(os.getenv('PROFIT_MULTIPLIER'))
 all_youtube_languages = [  # NOTE english is first since it has priority
     "en", "de", "fr", "ab", "aa", "af", "ak", "sq", "am", "ar", "hy", "as", "ay", "az", "bn", 
     "ba", "eu", "be", "bho", "bs", "br", "bg", "my", "ca", "ceb", "zh-Hans", 
