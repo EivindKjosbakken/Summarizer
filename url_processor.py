@@ -39,8 +39,10 @@ PROXY_ADDRESS = st.secrets["PROXY_ADDRESS"]
 # PROXY_USERNAME = st.secrets["PROXY_USERNAME"]
 PROXY_PASSWORD = st.secrets["PROXY_PASSWORD"]
 
-proxy_ports = ["31111", "31114", "31113", "31112", "31111"]
-proxy_usernames = ["ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-us-const-session-4ed05", "ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-us-const-session-4ed04", "ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-us-const-session-4ed03", "ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-us-const-session-4ed02", "ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-us-const-session-4ed01"]
+proxy_ports = ["5868", "5128", "6732", "6754", "5735"]
+proxy_usernames = ["ldsiesvc" for _ in range(len(proxy_ports))]
+proxy_addresses = ["38.154.227.167", "45.127.248.127", "64.64.118.149", "167.160.180.203", "166.88.58.10"]
+
 
 all_youtube_languages = [  # NOTE english is first since it has priority
     "en", "de", "fr", "ab", "aa", "af", "ak", "sq", "am", "ar", "hy", "as", "ay", "az", "bn", 
@@ -198,12 +200,12 @@ class URLProcessor:
             return
 
     def _extract_text_youtube(self, video_id):
-        for proxy_username, proxy_port in zip(proxy_usernames, proxy_ports):
-            logger.info(f"Using proxy: {proxy_username}")
-            proxy_https = f"https://{proxy_username}:{PROXY_PASSWORD}@{PROXY_ADDRESS}:{proxy_port}"
+        for proxy_username, proxy_port, proxy_address in zip(proxy_usernames, proxy_ports, proxy_addresses):
+            logger.info("Choosing new proxy")
+            proxy_http = f"https://{proxy_username}:{PROXY_PASSWORD}@{proxy_address}:{proxy_port}" # using webshare.io proxies
             for _ in range(5):
                 try:
-                    caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy_https}, languages=all_youtube_languages) #  http is supposed to point to proxy_https, doesnt work otherwise
+                    caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy_http}, languages=all_youtube_languages) #  http is supposed to point to proxy_https, doesnt work otherwise
                     text = " ".join([x["text"] for x in caption])
                     return text
                 except Exception as e:
