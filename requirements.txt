@@ -9,3 +9,5 @@ google-cloud-firestore
 python-dotenv
 python-pptx
 python-docx
+podcast-api
+spotipy
