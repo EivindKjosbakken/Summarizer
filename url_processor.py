@@ -200,16 +200,15 @@ class URLProcessor:
         for proxy_username, proxy_port, proxy_address in zip(proxy_usernames, proxy_ports, proxy_addresses):
             logger.info("Choosing new proxy")
             proxy_http = f"https://{proxy_username}:{PROXY_PASSWORD}@{proxy_address}:{proxy_port}" # using webshare.io proxies
-            for _ in range(5):
-                try:
-                    caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy_http}, languages=all_youtube_languages) #  http is supposed to point to proxy_https, doesnt work otherwise
-                    text = " ".join([x["text"] for x in caption])
-                    return text
-                except Exception as e:
-                    print(f"Error: {e}")
-                    logger.info(f"Error when extracting text from youtube video: {e}")
-                    time.sleep(1)
-                    logger.info("Retrying...")
+            try:
+                caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy_http}, languages=all_youtube_languages) #  http is supposed to point to proxy_https, doesnt work otherwise
+                text = " ".join([x["text"] for x in caption])
+                return text
+            except Exception as e:
+                print(f"Error: {e}")
+                logger.info(f"Error when extracting text from youtube video: {e}")
+                time.sleep(3)
+                logger.info("Retrying...")
 
     def _extract_title_youtube(self, video_url):
         try:
