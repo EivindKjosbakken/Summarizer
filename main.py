@@ -9,8 +9,7 @@ from utility import display_credit_bar
 from stripe_payments import create_checkout_session, get_payment_amount, check_payment_status
 from document_processor import DocumentProcessor
 from firebase_utility import get_user, db, add_user_tokens
-from utility import retrieve_content
-
+from url_processor import URLProcessor
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -19,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 llm_agent = LlmAgent()
 document_processor = DocumentProcessor()
+url_processor = URLProcessor()
 
 STANDARD_START_TOKENS = int(os.getenv('STANDARD_START_TOKENS'))
 
@@ -269,14 +269,15 @@ with st.container():
     with col2:
         st.write("## Link to content")
 
-        link = st.text_input("Paste a link to Spotify or YouTube", type="default")
+        link = st.text_input("Paste a link to Spotify episode or YouTube", type="default")
         if st.button("Create a summary from the content in the link"):
             if not is_signed_in:
                 st.write(login_warning_text)
             else:
-                content = retrieve_content(link)
+                st.write("Summarizing content from the link. This can take up to 180 seconds")
+                content = url_processor.retrieve_content(link)
                 if not content:
-                    st.write(":[Could not retrieve content from the link.]")
+                    st.write(":red[Could not retrieve content from the link.]")
                 else:
                     st.session_state.text_content = content
                     prompt = llm_agent.get_prompt(content)

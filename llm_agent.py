@@ -1,8 +1,10 @@
-from firebase_utility import db, subtract_user_tokens, get_remaining_tokens
 import streamlit as st
 from openai import OpenAI
 import asyncio
 import os
+
+from utility import subtract_tokens
+from firebase_utility import db, subtract_user_tokens, get_remaining_tokens
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -46,7 +48,7 @@ class LlmAgent:
         self.calculate_price(prompt, response_text)
         return response_text
 
-    def prompt_gpt_stream(self, messages):
+    def prompt_gpt_stream(self, messages): # NOTE price must be calculated outside func since it is a stream!
         """similar to prompt gpt, but returns a stream (print out model output as it is generated). Also manually inputs messages used for prompt"""
         remaining_tokens = get_remaining_tokens()
         if remaining_tokens <= 0:
@@ -66,27 +68,15 @@ class LlmAgent:
         output_tokens = len(output_string.replace("\n", " ").split()) / 0.75
         # calculate the price in USD
         INPUT_TOKEN_PRICE = 0.15 / 1e6  # price per token
-        OUTPUT_TOKEN_PRICE = 0.60 / 1e6
+        OUTPUT_TOKEN_PRICE = 0.60 / 1e6 #TODO legge i env variabler
         price_usd = input_tokens * INPUT_TOKEN_PRICE + output_tokens * OUTPUT_TOKEN_PRICE
         price_nok = price_usd * 10.47
         # print(f"Cost of query: {price_usd:.4f} USD or {price_nok:.4f} NOK ")
         logging.info(f" Cost of query: {price_usd:.4f} USD or {price_nok:.4f} NOK")
-        
-        asyncio.run(self.subtract_tokens(price_usd)) # async subtract tokens. Async to avoid increase waiting time for llm response
+        GPT_PROFIT_MULTIPLIER = int(os.getenv('GPT_PROFIT_MULTIPLIER'))
+        asyncio.run(subtract_tokens(price_usd, GPT_PROFIT_MULTIPLIER)) # async subtract tokens. Async to avoid increase waiting time for llm response
         return price_usd
 
-    async def subtract_tokens(self, usd_spent: float):
-        """subtracts tokens from a user every time they use a service"""
-        cent_spent = usd_spent * 100 # only use cent in db
-        # round to nearest 100
-        cent_spent = round(cent_spent, 4)
-        
-        # get user tokens
-        email = st.session_state.user_info['email']
-        tokens_to_subtract = cent_spent * PROFIT_MULTIPLIER
-        remaining_tokens = subtract_user_tokens(db, email, tokens_to_subtract)
-        print(f"Subtracted {cent_spent} tokens from user {email}. User has {remaining_tokens} tokens left")
-        st.session_state.remaining_tokens = remaining_tokens
 
 
     def get_prompt(self, content):
