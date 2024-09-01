@@ -34,9 +34,6 @@ aai.settings.api_key = ASSEMBLY_AI_API_KEY
 
 
 # from oculos proxies
-PROXY_ADDRESS = st.secrets["PROXY_ADDRESS"]
-# PROXY_PORT = st.secrets["PROXY_PORT"]
-# PROXY_USERNAME = st.secrets["PROXY_USERNAME"]
 PROXY_PASSWORD = st.secrets["PROXY_PASSWORD"]
 
 proxy_ports = ["5868", "5128", "6732", "6754", "5735"]
