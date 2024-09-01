@@ -162,7 +162,7 @@ assembly_ai_language_codes = ['en',
  'yi',
  'yo']
 
-
+podcast_language_to_assembly_ai_language = {"nb": "no"} # list of edge cases where you have to translate podcast language to a language assembly ai accepts
 # use nano model for transcription. Cheaper and supports more languages
 
 
@@ -274,6 +274,9 @@ class URLProcessor:
         episode_name = episode.get("name", "Not found")
 
         podcast_language = episode.get("language", None)
+        if podcast_language in podcast_language_to_assembly_ai_language:
+            podcast_language = podcast_language_to_assembly_ai_language[podcast_language]
+            
         if (podcast_language is None) or (podcast_language not in assembly_ai_language_codes):
             podcast_language = "en"
             logger.info("Setting language to English as a baseline, since no valid language was detected")
