@@ -39,8 +39,8 @@ PROXY_ADDRESS = st.secrets["PROXY_ADDRESS"]
 # PROXY_USERNAME = st.secrets["PROXY_USERNAME"]
 PROXY_PASSWORD = st.secrets["PROXY_PASSWORD"]
 
-proxy_ports = ["31111", "31113", "31114", "31111", "31112"]
-proxy_usernames = ["ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-no-const-session-c49d2", "ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-no-const-session-c49d4", "ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-no-const-session-c49d5", "31111:ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-no-const-session-c49d6", "ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-no-const-session-c49d3"]
+proxy_ports = ["31111", "31114", "31113", "31112", "31111"]
+proxy_usernames = ["ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-us-const-session-4ed05", "ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-us-const-session-4ed04", "ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-us-const-session-4ed03", "ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-us-const-session-4ed02", "ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-us-const-session-4ed01"]
 
 all_youtube_languages = [  # NOTE english is first since it has priority
     "en", "de", "fr", "ab", "aa", "af", "ak", "sq", "am", "ar", "hy", "as", "ay", "az", "bn", 
