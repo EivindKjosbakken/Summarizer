@@ -11,3 +11,4 @@ python-pptx
 python-docx
 podcast-api
 spotipy
+assemblyai
