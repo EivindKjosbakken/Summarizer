@@ -48,9 +48,71 @@ if "remaining_credits" not in st.session_state:
 if 'credits_loaded' not in st.session_state:
     st.session_state.credits_loaded = False
 
+if 'tutorial_step' not in st.session_state:
+    st.session_state.tutorial_step = 0
+
 login_warning_text = ":red[Please login to use this feature.]"
 
 # start of the app
+
+# tutorial
+with st.sidebar:
+    if st.button("Start tutorial for using website", key="start_tutorial"):
+        st.session_state.tutorial_step = 1
+
+def next_step():
+    st.session_state.tutorial_step += 1
+    # reload
+    st.rerun()
+
+
+# Define the custom style for the box using percentage for width
+def get_info_box_style(text):
+    # Replace \n with <br> for line breaks in HTML
+    text = text.replace('\n', '<br>')
+    
+    custom_box_style = f"""
+        <div style="
+            background-color: #f0f2f6;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 25%;         /* Set the width as a percentage of the parent container */
+            min-width: 300px;   /* Set a minimum width to prevent the box from getting too small on small screens */
+            margin: auto;       /* Center the box horizontally */
+        ">
+            <p>{text}</p>
+        </div>
+        """
+    return custom_box_style
+
+if "tutorial_step" in st.session_state:
+    with st.sidebar:
+        if st.session_state.tutorial_step == 1:
+            st.markdown(get_info_box_style("<strong>Step 1:</strong>\n Register"), unsafe_allow_html=True)
+            if st.button("Next Step", key="next_step_1"):
+                next_step()
+
+        if st.session_state.tutorial_step == 2:
+            st.markdown(get_info_box_style("<strong>Step 2:</strong>\n Log in"), unsafe_allow_html=True)
+            if st.button("Next Step", key="next_step_2"):
+                next_step()
+
+        if st.session_state.tutorial_step == 3:
+            st.markdown(get_info_box_style("<strong>Step 3:</strong>\n Upload a PDF or link to a YouTube video"), unsafe_allow_html=True)
+            if st.button("Next Step", key="next_step_3"):
+                next_step()
+
+        if st.session_state.tutorial_step == 4:
+            st.markdown(get_info_box_style("<strong>Step 4:</strong>\n Press create summary"), unsafe_allow_html=True)
+            if st.button("Next Step", key="next_step_4"):
+                next_step()
+
+        if st.session_state.tutorial_step == 5:
+            st.markdown(get_info_box_style("<strong>Step 5:</strong>\n Chat with your content"), unsafe_allow_html=True)
+            if st.button("Finish", key="finish"):
+                st.write("Tutorial finished!")
+                st.session_state.tutorial_step = 0
 
 
 display_credit_bar(total_credits=2000, remaining_credits=st.session_state.remaining_credits) #TODO add so you have remaining credits from firebase
@@ -207,14 +269,14 @@ with st.container():
     with col2:
         st.write("## Link to content")
 
-        link = st.text_input("Paste a link", type="default")
+        link = st.text_input("Paste a link to Spotify or YouTube", type="default")
         if st.button("Create a summary from the content in the link"):
             if not is_signed_in:
                 st.write(login_warning_text)
             else:
                 content = retrieve_content(link)
                 if not content:
-                    st.write("Could not retrieve content from the link.")
+                    st.write(":[Could not retrieve content from the link.]")
                 else:
                     st.session_state.text_content = content
                     prompt = llm_agent.get_prompt(content)
@@ -295,3 +357,6 @@ else:
 with st.sidebar: 
     st.write("## Contact")
     st.write("Reach me at summarymate@gmail.com")
+
+
+
