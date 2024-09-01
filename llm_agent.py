@@ -11,8 +11,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-PROFIT_MULTIPLIER = int(os.getenv('PROFIT_MULTIPLIER'))
-
 
 class LlmAgent:
     def __init__(self):
