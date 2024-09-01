@@ -199,7 +199,7 @@ class URLProcessor:
     def _extract_text_youtube(self, video_id):
         for proxy_username, proxy_port, proxy_address in zip(proxy_usernames, proxy_ports, proxy_addresses):
             logger.info("Choosing new proxy")
-            proxy_http = f"https://{proxy_username}:{PROXY_PASSWORD}@{proxy_address}:{proxy_port}" # using webshare.io proxies
+            proxy_http = f"http://{proxy_username}:{PROXY_PASSWORD}@{proxy_address}:{proxy_port}" # using webshare.io proxies
             proxies = {"http": proxy_http, "https": proxy_http}
                 
             try:
