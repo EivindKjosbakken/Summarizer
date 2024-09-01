@@ -9,13 +9,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# set up proxy TODO make code cleaner into env variables
-PROXY_ADDRESS = st.secrets["PROXY_ADDRESS"]
-PROXY_PORT = st.secrets["PROXY_PORT"]
-PROXY_USERNAME = st.secrets["PROXY_USERNAME"]
-PROXY_PASSWORD = st.secrets["PROXY_PASSWORD"]
-proxy = f"https://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_ADDRESS}:{PROXY_PORT}"
-
 PROFIT_MULTIPLIER = int(os.getenv('PROFIT_MULTIPLIER'))
 
 
@@ -55,6 +48,10 @@ class LlmAgent:
 
     def prompt_gpt_stream(self, messages):
         """similar to prompt gpt, but returns a stream (print out model output as it is generated). Also manually inputs messages used for prompt"""
+        remaining_tokens = get_remaining_tokens()
+        if remaining_tokens <= 0:
+            st.error("You have no remaining credits. Please top up to continue.")
+            return
         stream = self.open_ai_client.chat.completions.create(
             model=st.session_state["openai_model"],
             messages=messages,
