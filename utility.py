@@ -15,7 +15,8 @@ PROXY_ADDRESS = st.secrets["PROXY_ADDRESS"]
 PROXY_PORT = st.secrets["PROXY_PORT"]
 PROXY_USERNAME = st.secrets["PROXY_USERNAME"]
 PROXY_PASSWORD = st.secrets["PROXY_PASSWORD"]
-proxy = f"https://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_ADDRESS}:{PROXY_PORT}"
+proxy_http = f"http://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_ADDRESS}:{PROXY_PORT}"
+proxy_https = f"https://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_ADDRESS}:{PROXY_PORT}"
 
 PROFIT_MULTIPLIER = int(os.getenv('PROFIT_MULTIPLIER'))
 
@@ -50,10 +51,10 @@ def get_id_from_url_youtube(url):
         return
 
 def extract_text_youtube(video_id):
-    for _ in range(10): # try up to 5 times, wait 1 sec if it fails
+    for _ in range(10): # try up to 10 times, wait .5 sec if it fails
         try:
             # caption = YouTubeTranscriptApi.get_transcript(video_id)
-            caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy}, languages=all_languages) 
+            caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy_http, "https": proxy_https}, languages=all_languages) 
             text = " ".join([x["text"] for x in caption])
             return text
         except Exception as e:
