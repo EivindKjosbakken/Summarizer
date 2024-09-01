@@ -35,10 +35,12 @@ aai.settings.api_key = ASSEMBLY_AI_API_KEY
 
 # from oculos proxies
 PROXY_ADDRESS = st.secrets["PROXY_ADDRESS"]
-PROXY_PORT = st.secrets["PROXY_PORT"]
-PROXY_USERNAME = st.secrets["PROXY_USERNAME"]
+# PROXY_PORT = st.secrets["PROXY_PORT"]
+# PROXY_USERNAME = st.secrets["PROXY_USERNAME"]
 PROXY_PASSWORD = st.secrets["PROXY_PASSWORD"]
-proxy_https = f"https://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_ADDRESS}:{PROXY_PORT}"
+
+proxy_ports = ["31111", "31113", "31114", "31111", "31112"]
+proxy_usernames = ["ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-no-const-session-c49d2", "ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-no-const-session-c49d4", "ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-no-const-session-c49d5", "31111:ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-no-const-session-c49d6", "ba13396172373555b0b863c3af19140f4c160dd90f6ba2b93552416465428b7148737322204a0f4aa816315fab4f5f5d-country-no-const-session-c49d3"]
 
 all_youtube_languages = [  # NOTE english is first since it has priority
     "en", "de", "fr", "ab", "aa", "af", "ak", "sq", "am", "ar", "hy", "as", "ay", "az", "bn", 
@@ -196,16 +198,19 @@ class URLProcessor:
             return
 
     def _extract_text_youtube(self, video_id):
-        for _ in range(10): # try up to 10 times, wait 1 sec if it fails
-            try:
-                caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy_https}, languages=all_youtube_languages) #  http is supposed to point to proxy_https, doesnt work otherwise
-                text = " ".join([x["text"] for x in caption])
-                return text
-            except Exception as e:
-                print(f"Error: {e}")
-                logger.info(f"Error when extracting text from youtube video: {e}")
-                time.sleep(1)
-                logger.info("Retrying...")
+        for proxy_username, proxy_port in zip(proxy_usernames, proxy_ports):
+            logger.info(f"Using proxy: {proxy_username}")
+            proxy_https = f"https://{proxy_username}:{PROXY_PASSWORD}@{PROXY_ADDRESS}:{proxy_port}"
+            for _ in range(5):
+                try:
+                    caption = YouTubeTranscriptApi.get_transcript(video_id, proxies={"http": proxy_https}, languages=all_youtube_languages) #  http is supposed to point to proxy_https, doesnt work otherwise
+                    text = " ".join([x["text"] for x in caption])
+                    return text
+                except Exception as e:
+                    print(f"Error: {e}")
+                    logger.info(f"Error when extracting text from youtube video: {e}")
+                    time.sleep(1)
+                    logger.info("Retrying...")
 
     def _extract_title_youtube(self, video_url):
         try:
