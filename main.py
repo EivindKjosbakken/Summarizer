@@ -261,9 +261,10 @@ with st.container():
             elif uploaded_file is None:
                 st.write(":red[Please upload a PDF file first.]")
             else:
-                prompt = "Summarize this: " + full_text
-                response_text = llm_agent.prompt_gpt(prompt=prompt)
-                st.session_state.summary = response_text
+                with st.spinner("Generating summary..."):
+                    prompt = "Summarize this: " + full_text
+                    response_text = llm_agent.prompt_gpt(prompt=prompt)
+                    st.session_state.summary = response_text
 
     # Second column: Link input section
     with col2:
@@ -274,16 +275,16 @@ with st.container():
             if not is_signed_in:
                 st.write(login_warning_text)
             else:
-                st.write("Summarizing content from the link. This can take up to 180 seconds")
-                content = url_processor.retrieve_content(link)
-                if not content:
-                    st.write(":red[Could not retrieve content from the link.]")
-                else:
-                    st.session_state.text_content = content
-                    prompt = llm_agent.get_prompt(content)
-                    response_text = llm_agent.prompt_gpt(prompt=prompt)
-                    st.session_state.summary = response_text
+                with st.spinner("Retrieving content and generating summary. This can take up to 180 seconds, but likely less."):
 
+                    content = url_processor.retrieve_content(link)
+                    if not content:
+                        st.write(":red[Could not retrieve content from the link.]")
+                    else:
+                        st.session_state.text_content = content
+                        prompt = llm_agent.get_prompt(content)
+                        response_text = llm_agent.prompt_gpt(prompt=prompt)
+                        st.session_state.summary = response_text
 
 st.write("\n\n")
 
