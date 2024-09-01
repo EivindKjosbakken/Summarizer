@@ -1,3 +1,7 @@
+"""summary
+Code from: https://github.com/cmayoracurzio/streamlit_firebase_auth
+"""
+
 import json
 import requests
 import streamlit as st
@@ -5,6 +9,7 @@ import streamlit as st
 from firebase_utility import add_user
 from google.cloud import firestore
 from firebase_utility import db
+
 
 ## -------------------------------------------------------------------------------------------------
 ## Firebase Auth API -------------------------------------------------------------------------------
