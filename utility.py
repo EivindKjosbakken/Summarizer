@@ -5,6 +5,7 @@ import logging
 import re
 from youtube_transcript_api import YouTubeTranscriptApi
 from pytube import YouTube
+from firebase_utility import get_remaining_tokens
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -15,7 +16,6 @@ PROXY_ADDRESS = st.secrets["PROXY_ADDRESS"]
 PROXY_PORT = st.secrets["PROXY_PORT"]
 PROXY_USERNAME = st.secrets["PROXY_USERNAME"]
 PROXY_PASSWORD = st.secrets["PROXY_PASSWORD"]
-proxy_http = f"http://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_ADDRESS}:{PROXY_PORT}"
 proxy_https = f"https://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_ADDRESS}:{PROXY_PORT}"
 
 PROFIT_MULTIPLIER = int(os.getenv('PROFIT_MULTIPLIER'))
@@ -87,6 +87,10 @@ def get_youtube_content(url):
     return content
 
 def retrieve_content(link: str):
+    remaining_tokens = get_remaining_tokens()
+    if remaining_tokens <= 0:
+        st.error("You have no remaining credits. Please top up to continue.")
+        return
     if "youtube" in link or "youtu.be" in link:
         return get_youtube_content(link)
     logger.info("Website not added yet") 
