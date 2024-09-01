@@ -9,17 +9,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# set up proxy TODO make code cleaner into env variables
-PROXY_ADDRESS = st.secrets["PROXY_ADDRESS"]
-PROXY_PORT = st.secrets["PROXY_PORT"]
-PROXY_USERNAME = st.secrets["PROXY_USERNAME"]
-PROXY_PASSWORD = st.secrets["PROXY_PASSWORD"]
-proxy_https = f"https://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_ADDRESS}:{PROXY_PORT}"
-
-
-
-
-
 def display_credit_bar(total_credits, remaining_credits):
     st.write(f"Remaining Credits: {round(remaining_credits, 4)}")
     percentage_remaining = (remaining_credits / total_credits) * 100
