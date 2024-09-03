@@ -330,6 +330,8 @@ else:
     ):  # NOTE do not have container, that messes up so chat gets below the prompt
         if not is_signed_in:
             st.warning("Please sign in to use the chat function.")
+        elif st.session_state.remaining_credits < 0:
+            st.error("You have no remaining credits. Please top up to continue.")
         else:
             with st.chat_message("user"):
                 st.markdown(prompt)

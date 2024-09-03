@@ -55,13 +55,21 @@ class URLProcessor:
         if remaining_tokens <= 0:
             st.error("You have no remaining credits. Please top up to continue.")
             return
+        content = None
         if "youtube" in link or "youtu.be" in link:
-            return self._get_youtube_content(link)
-        elif "spotify" in link:
-            return self.get_spotify_transcript(link)
 
-        logger.info("Website not added yet") 
-        return None
+            content = self._get_youtube_content(link)
+        elif "spotify" in link:
+            content = self.get_spotify_transcript(link)
+
+        if content is None:
+            logger.info("Website not added yet") 
+            return None
+        
+        if len(content) > 180000:
+            print("Content too long, truncating")
+            content = content[:180000]
+        return content
 
     # youtube
     def _get_id_from_url_youtube(self, url):
@@ -119,6 +127,9 @@ class URLProcessor:
         try:
             podcast_episode_name, podcast_language = self._get_podcast_episode_name_and_language(spotify_url)
             listen_notes_audio_url, podcast_length = self._get_listen_notes_audio_url(podcast_episode_name)
+            if podcast_length > 3*60*60: # 3 hours
+                st.error("Podcast is please upload podcast shorter than 3 hours")
+                return
             transcript = self._get_podcast_transcript(listen_notes_audio_url, podcast_language)
             # logger.info(f"Transcript: {transcript}")
             self.calculate_spotify_transcript_price(podcast_length)
