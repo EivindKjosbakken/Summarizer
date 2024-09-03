@@ -12,14 +12,21 @@ logger = logging.getLogger(__name__)
 def display_credit_bar(total_credits, remaining_credits):
     st.write(f"Remaining Credits: {round(remaining_credits, 4)}")
     percentage_remaining = (remaining_credits / total_credits) * 100
+
+    # Determine the color based on the remaining credits
+    if remaining_credits > 0:
+        bar_color = "green" 
+    else:
+        bar_color = "red"
+        percentage_remaining = 100
+
     
     st.markdown(f"""
     <div style="position: relative; width: 100%; background-color: black; height: 30px; border-radius: 5px;">
-        <div style="width: {percentage_remaining}%; background-color: green; height: 100%; border-radius: 5px;">
+        <div style="width: {percentage_remaining}%; background-color: {bar_color}; height: 100%; border-radius: 5px;">
         </div>
     </div>
     """, unsafe_allow_html=True)
-
 
 async def subtract_tokens(usd_spent: float, profit_multiplier: int):
     """subtracts tokens from a user every time they use a service"""
