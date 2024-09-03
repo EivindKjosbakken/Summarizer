@@ -19,6 +19,7 @@ import asyncio
 
 from firebase_utility import get_remaining_tokens
 from utility import subtract_tokens
+from variables import podcast_language_to_assembly_ai_language, all_youtube_languages, assembly_ai_language_codes
 
 
 import logging
@@ -36,134 +37,11 @@ aai.settings.api_key = ASSEMBLY_AI_API_KEY
 # from oculos proxies
 PROXY_PASSWORD = st.secrets["PROXY_PASSWORD"]
 
-proxy_ports = ["5868", "5128", "6732", "6754", "5735"]
+proxy_ports = ["5868", "5128", "6732", "6754", "5735",
+               "5653", "6600", "6342", "5792", "6634"]
 proxy_usernames = ["ldsiesvc2" for _ in range(len(proxy_ports))]
-proxy_addresses = ["38.154.227.167", "45.127.248.127", "64.64.118.149", "167.160.180.203", "166.88.58.10"]
-
-# TODO legge disse til i separate filer
-all_youtube_languages = [  # NOTE english is first since it has priority
-    "en", "de", "fr", "ab", "aa", "af", "ak", "sq", "am", "ar", "hy", "as", "ay", "az", "bn", 
-    "ba", "eu", "be", "bho", "bs", "br", "bg", "my", "ca", "ceb", "zh-Hans", 
-    "zh-Hant", "co", "hr", "cs", "da", "dv", "nl", "dz", "eo", "et", 
-    "ee", "fo", "fj", "fil", "fi", "gaa", "gl", "lg", "ka", 
-    "el", "gn", "gu", "ht", "ha", "haw", "iw", "hi", "hmn", "hu", "is", 
-    "ig", "id", "ga", "it", "ja", "jv", "kl", "kn", "kk", "kha", "km", 
-    "rw", "ko", "kri", "ku", "ky", "lo", "la", "lv", "ln", "lt", "luo", 
-    "lb", "mk", "mg", "ms", "ml", "mt", "gv", "mi", "mr", "mn", "mfe", 
-    "ne", "new", "nso", "no", "ny", "oc", "or", "om", "os", "pam", "ps", 
-    "fa", "pl", "pt", "pt-PT", "pa", "qu", "ro", "rn", "ru", "sm", "sg", 
-    "sa", "gd", "sr", "crs", "sn", "sd", "si", "sk", "sl", "so", "st", 
-    "es", "su", "sw", "ss", "sv", "tg", "ta", "tt", "te", "th", "bo", 
-    "ti", "to", "ts", "tn", "tum", "tr", "tk", "uk", "ur", "ug", "uz", 
-    "ve", "vi", "war", "cy", "fy", "wo", "xh", "yi", "yo", "zu"
-]
-
-# all languages available for assembly ai nano model
-assembly_ai_language_codes = ['en',
- 'en_au',
- 'en_uk',
- 'en_us',
- 'es',
- 'fr',
- 'de',
- 'it',
- 'pt',
- 'nl',
- 'af',
- 'sq',
- 'am',
- 'ar',
- 'hy',
- 'as',
- 'az',
- 'ba',
- 'eu',
- 'be',
- 'bn',
- 'bs',
- 'br',
- 'bg',
- 'my',
- 'ca',
- 'zh',
- 'hr',
- 'cs',
- 'da',
- 'et',
- 'fo',
- 'fi',
- 'gl',
- 'ka',
- 'el',
- 'gu',
- 'ht',
- 'ha',
- 'haw',
- 'he',
- 'hi',
- 'hu',
- 'is',
- 'id',
- 'ja',
- 'jw',
- 'kn',
- 'kk',
- 'km',
- 'ko',
- 'lo',
- 'la',
- 'lv',
- 'ln',
- 'lt',
- 'lb',
- 'mk',
- 'mg',
- 'ms',
- 'ml',
- 'mt',
- 'mi',
- 'mr',
- 'mn',
- 'ne',
- 'no',
- 'nn',
- 'oc',
- 'pa',
- 'ps',
- 'fa',
- 'pl',
- 'ro',
- 'ru',
- 'sa',
- 'sr',
- 'sn',
- 'sd',
- 'si',
- 'sk',
- 'sl',
- 'so',
- 'su',
- 'sw',
- 'sv',
- 'tl',
- 'tg',
- 'ta',
- 'tt',
- 'te',
- 'th',
- 'bo',
- 'tr',
- 'tk',
- 'uk',
- 'ur',
- 'uz',
- 'vi',
- 'cy',
- 'yi',
- 'yo']
-
-podcast_language_to_assembly_ai_language = {"nb": "no"} # list of edge cases where you have to translate podcast language to a language assembly ai accepts
-# use nano model for transcription. Cheaper and supports more languages
+proxy_addresses = ["38.154.227.167", "45.127.248.127", "64.64.118.149", "167.160.180.203", "166.88.58.10"
+                   "173.0.9.70", "45.151.162.198", "204.44.69.89", "173.0.9.209", "206.41.172.74"]
 
 
 class URLProcessor:
