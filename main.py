@@ -262,7 +262,7 @@ with st.container():
                 st.write(":red[Please upload a PDF file first.]")
             else:
                 with st.spinner("Generating summary..."):
-                    prompt = "Summarize this: " + full_text
+                    prompt = "Summarize this (answer in the same language as the text is. If unsure, use English): " + full_text
                     response_text = llm_agent.prompt_gpt(prompt=prompt)
                     st.session_state.summary = response_text
 
@@ -282,7 +282,7 @@ with st.container():
                         st.write(":red[Could not retrieve content from the link.]")
                     else:
                         st.session_state.text_content = content
-                        prompt = llm_agent.get_prompt(content)
+                        prompt = f"Summarize this (answer in the same language as the text is. If unsure, use English): {content}"
                         response_text = llm_agent.prompt_gpt(prompt=prompt)
                         st.session_state.summary = response_text
 
